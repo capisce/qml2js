@@ -112,27 +112,50 @@ Rectangle.prototype = Object.create(Item.prototype);
 
 basicelements = {}
 
-function addProperty(name, elementDescription)
-{
-    var propertyDescription = elementDescription.properties[name];
-    var value = propertyDescription.value;
-    var that = this;
-
-    var handler = propertyDescription.hasOwnProperty("handler") ? propertyDescription.handler : null;
-
-    Object.defineProperty(this, name, {
-        get: function() { return value; },
-        set: function(v) { if (v === value) return; value = v; if (handler) handler.call(that, value); }
-    });
-}
-
 function addElement(collection, elementDescription)
 {
+    this.test = false;
+    this.sources = []
+
+    var propertyController = this;
+
+    function addProperty(name, elementDescription)
+    {
+        var propertyDescription = elementDescription.properties[name];
+        var value = propertyDescription.value;
+        var that = this;
+
+        var handler = propertyDescription.hasOwnProperty("handler") ? propertyDescription.handler : null;
+
+        var sinks = [];
+        var source = { object: this, property: name, description: propertyDescription, sinks: sinks };
+
+        var triggerBindings =
+            function()
+            {
+                for (var i = 0, len = sinks.length; i < len; ++i)
+                    sinks[i]();
+            };
+
+        Object.defineProperty(this, name, {
+            get: function() { if (propertyController.test) propertyController.sources.push(source); return value; },
+            set: function(v) { if (v === value) return; value = v; triggerBindings(); if (handler) handler.call(that, value); }
+        });
+    }
+
+    function createSourceBinding(obj, binding, callback)
+    {
+        forEach (sources,
+            function(source)
+            {
+                source.sinks.push(function() { obj[binding] = callback(); });
+            });
+    }
+
     var element = {
         description: elementDescription,
         constructor: function (parent)
         {
-            console.log("constructor invoked with parent " + parent);
             if (elementDescription.hasOwnProperty("parent"))
                 collection[elementDescription.parent].constructor.call(this, parent);
 
@@ -147,7 +170,6 @@ function addElement(collection, elementDescription)
             }
 
             if (elementDescription.hasOwnProperty("constructor")) {
-                console.log("calling constructor with parent " + parent);
                 elementDescription.constructor.call(that, parent);
             }
 
@@ -158,16 +180,16 @@ function addElement(collection, elementDescription)
                         propertyDescription.handler.call(that, that[prop]);
                 }
             }
-
-            console.log("Created element " + elementDescription.name + " with parent " + elementDescription.parent);
-            console.log("Properties: " + Object.getOwnPropertyNames(that));
         },
         applyBindings: function (bindings)
         {
             for (binding in bindings) {
                 var value = bindings[binding];
                 if (typeof value === "function") {
+                    propertyController.test = true;
                     this[binding] = value();
+                    propertyController.test = false;
+                    createSourceBinding(this, binding, value);
                 } else {
                     this[binding] = value;
                 }
@@ -195,7 +217,6 @@ addElement(basicelements,
             } :
             function(value) {
                 this.priv.element.style[key] = value + suffix;
-                console.log("Setting style " + key + " of div " + this.priv.element + " to " + value + suffix);
             }
     };
 
@@ -338,19 +359,17 @@ function initialize()
     */
 
     var child = createInstance(scope, "Rectangle", obj);
-    applyBindings(child, { color: "#FF3300", width: 40, height: function() { return 65; } });
+    applyBindings(child, { color: "#FF3300", width: 40, height: function() { return 60; } });
 
     console.log("child.x:", child.x);
 
     var child2 = createInstance(scope, "Rectangle", obj);
-    applyBindings(child2, { color: "#FF0033", width: 40, height: 40, x: function() { console.log("Invoked with child: " + child + ", x: " + child.x); return child.x + 80; }, width: 40, height: function() { return 65; } });
+    applyBindings(child2, { color: "#FF0033", width: 40, height: 40, x: function() { return child.x + 80; }, y: function() { return 1.5 * child.x; }, width: 40, height: function() { return 60; } });
 
     console.log("child2.x:", child2.x);
 
     var o1 = { prototype: { x: 2 } };
 
-//    o2 = { y: 4 } 
-//    o2.prototype = o1;
     o2 = Object.create(o1)
     o2.x = 2
 
@@ -367,8 +386,6 @@ function initialize()
     o2.y = 2
     z = o2.y
 
-//    (function() { console.log("x: " + this.x + ", y: " + this.y); }).call(o2);
-
     var f
     with (o2) { f = function() {var w = o2.y; console.log("i2"); console.log("x: " + x + ", y: " + y); } }
 
@@ -377,7 +394,7 @@ function initialize()
 
     function animate() 
     {
-        if (child.x < 40) child.x += 1;
+        if (child.x < 80) child.x += 1;
     }
 
     var interval_60hz = 1000 / 60.0 ;

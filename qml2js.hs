@@ -188,36 +188,62 @@ generateJsForBinding indentLevel (key, code) =
         hasBraces = code !! 0 == '{'
     in i1 ++ key ++ ": function() " ++ if hasBraces then stripped else "{ return " ++ stripped ++ " }"
 
+generateProperty :: String -> String -> String
+generateProperty obj prop =
+    indent 1 ++ "addProperty(" ++ obj ++ ", " ++ show prop ++ ");\n"
+
 generateConstructors :: String -> QmlObject -> String
 generateConstructors parent obj =
     let i1 = indent 1
+        id = objectId obj
+        ownProps = ownProperties obj
+        propertySetters = if not $ null ownProps
+                          then concat (map (generateProperty id) ownProps)
+                          else []
         children = childObjects obj
-    in i1 ++ "var " ++ objectId obj ++ " = createInstance(scope, \"" ++ objectType obj ++ "\"" ++ parent ++ ");\n" ++
-        if not $ null children
-        then concat (map (generateConstructors (", " ++ objectId obj)) children)
-        else []
+        childConstructors = if not $ null children
+                            then concat (map (generateConstructors (", " ++ id)) children)
+                            else []
+    in i1 ++ "var " ++ id ++ " = createInstance(imports, \"" ++ objectType obj ++ "\"" ++ parent ++ ");\n" ++
+       propertySetters ++ childConstructors;
 
-generateBindings :: QmlObject -> String
-generateBindings obj =
-    let i1 = indent 1
+jsForProperty :: Int -> String -> String -> String -> String
+jsForProperty indentLevel objectId scopeId property =
+    indent indentLevel ++ "addPropertyProxy(" ++ scopeId ++ ", " ++ objectId ++ ", " ++ show property ++ ");\n"
+
+generateBindings :: Int -> QmlObject -> String
+generateBindings indentLevel obj =
+    let i1 = indent indentLevel
         bindings = propertyBindings obj
         children = childObjects obj
-        jsForBindings = (map (generateJsForBinding 2) bindings)
+        id = objectId obj
+        ownProps = ownProperties obj
+        scopeId = id ++ "_scope"
+        scope = if not $ null ownProps
+                then i1 ++ "var " ++ scopeId ++ " = {};\n" ++
+                     concat (map (jsForProperty indentLevel id scopeId) ownProps) ++
+                     i1 ++ "with (" ++ scopeId ++ ") {\n"
+                else ""
+        i2level = indentLevel + if null scope then 0 else 1
+        i2 = indent i2level
+        jsForBindings = (map (generateJsForBinding (i2level + 1)) bindings)
         core = if not $ null bindings
-               then i1 ++ "applyBindings(" ++ objectId obj ++ ", {\n" ++
+               then i2 ++ "applyBindings(" ++ id ++ ", {\n" ++
                   concat (intersperse ",\n" jsForBindings) ++
-                  "\n" ++ i1 ++ "});\n"
+                  "\n" ++ i2 ++ "});\n"
                else ""
     in
-        core ++ concat (map generateBindings children)
+        scope ++ core ++
+        concat (map (generateBindings i2level) children) ++
+        if not $ null scope then i1 ++ "}\n" else ""
     
 generateJs :: QmlObject -> String
 generateJs obj =
     let i1 = indent 1
         bindings = propertyBindings obj
         children = childObjects obj
-    in "function initQml() {\n" ++ i1 ++ "var scope = [ basicelements ];\n" ++
-       generateConstructors "" obj ++ generateBindings obj ++ "}\n"
+    in "function initQml() {\n" ++ i1 ++ "var imports = [ basicelements ];\n" ++
+       generateConstructors "" obj ++ generateBindings 1 obj ++ "}\n"
 
 processFile file = do
     x <- readFile file

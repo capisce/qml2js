@@ -13,16 +13,15 @@ function addElement(collection, elementDescription)
 
     var propertyController = this;
 
-    function addProperty(name, elementDescription)
+    function addPropertyImpl(name, propertyDescription)
     {
-        var propertyDescription = elementDescription.properties[name];
         var value = propertyDescription.value;
         var that = this;
 
         var handler = propertyDescription.hasOwnProperty("handler") ? propertyDescription.handler : null;
 
         var sinks = [];
-        var source = { object: this, property: name, description: propertyDescription, sinks: sinks };
+        var source = { object: this, property: name, sinks: sinks };
 
         var triggerBindings =
             function()
@@ -37,13 +36,15 @@ function addElement(collection, elementDescription)
         });
     }
 
-    function createSourceBinding(obj, binding, callback)
+    this.createSourceBinding = function(obj, binding, callback)
     {
         forEach (sources,
             function(source)
             {
                 source.sinks.push(function() { obj[binding] = callback(); });
             });
+
+        sources = []
     }
 
     var element = {
@@ -59,7 +60,7 @@ function addElement(collection, elementDescription)
 
             if (elementDescription.hasOwnProperty("properties")) {
                 for (prop in elementDescription.properties) {
-                    addProperty.call(that, prop, elementDescription)
+                    addPropertyImpl.call(that, prop, elementDescription.properties[prop])
                 }
             }
 
@@ -83,11 +84,16 @@ function addElement(collection, elementDescription)
                     propertyController.test = true;
                     this[binding] = value();
                     propertyController.test = false;
-                    createSourceBinding(this, binding, value);
+                    propertyController.createSourceBinding(this, binding, value);
                 } else {
                     this[binding] = value;
                 }
             }
+        },
+        addProperty: function (prop)
+        {
+            var that = this;
+            addPropertyImpl.call(that, prop, {});
         }
     };
 
@@ -136,6 +142,24 @@ addElement(basicelements,
             }
         });
 
+    var imageSetter = function(v)
+    {
+        this.priv.image.setAttribute("src", v);
+    }
+
+    addElement(basicelements,
+        {
+            parent: "Item",
+            name: "Image",
+            properties: {
+                source: { value: "", handler: imageSetter },
+            },
+            constructor: function() {
+                var element = this.priv.image = document.createElement('img');
+                this.priv.element.appendChild(element);
+            }
+        });
+
     addElement(basicelements,
         {
             parent: "Item",
@@ -175,7 +199,7 @@ addElement(basicelements,
         },
         constructor: function() {
             var that = this;
-            this.priv.element.onclick = function() { that.onClicked(); }
+            this.priv.element.addEventListener("click", function(e) { that.onClicked();  }, false);
         }
     });
 
@@ -263,9 +287,11 @@ addElement(basicelements,
             property: {},
             duration: { value: 1000 },
             from: { value: 0 },
-            to: { value: 1 },
-            running: { value: false, handler: function(v) { if (v) { startAnimation(createAnimation.call(this)) } } },
-            loops: { value: 1 }
+            to: { value: 1, handler: function(v) {
+                console.log("to set to " + v); }
+            },
+            loops: { value: 1 },
+            running: { value: false, handler: function(v) { if (v) { startAnimation(createAnimation.call(this)) } } }
         }
     });
 
@@ -303,6 +329,19 @@ function createInstance(scope, elementName, parent)
 function applyBindings(obj, bindings)
 {
     obj.metaElement.applyBindings.call(obj, bindings);
+}
+
+function addProperty(obj, property)
+{
+    obj.metaElement.addProperty.call(obj, property);
+}
+
+function addPropertyProxy(scope, obj, property)
+{
+    Object.defineProperty(scope, property, {
+        get: function() { return obj[property]; },
+        set: function(v) { obj[property] = v; }
+    });
 }
 
 function initialize()

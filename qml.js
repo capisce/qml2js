@@ -23,10 +23,14 @@ function initQml() {
     var _qml_id_6_3_ListElement = createInstance(imports, "ListElement", listModel);
     addProperty(_qml_id_6_3_ListElement, "name");
     var component = createInstance(imports, "Component", root);
-    var _qml_id_8_Text = createInstance(imports, "Text", root);
-    var _qml_id_9_Repeater = createInstance(imports, "Repeater", root);
-    var _qml_id_10_Text = createInstance(imports, "Text", root);
-    var _qml_id_11_Repeater = createInstance(imports, "Repeater", root);
+    var _qml_id_8_Item = createInstance(imports, "Item", root);
+    var _qml_id_8_1_Text = createInstance(imports, "Text", _qml_id_8_Item);
+    var _qml_id_8_2_Column = createInstance(imports, "Column", _qml_id_8_Item);
+    var _qml_id_8_2_1_Repeater = createInstance(imports, "Repeater", _qml_id_8_2_Column);
+    var _qml_id_9_Item = createInstance(imports, "Item", root);
+    var _qml_id_9_1_Text = createInstance(imports, "Text", _qml_id_9_Item);
+    var _qml_id_9_2_Column = createInstance(imports, "Column", _qml_id_9_Item);
+    var _qml_id_9_2_1_Repeater = createInstance(imports, "Repeater", _qml_id_9_2_Column);
     var root_scope = {};
     addPropertyProxy(root_scope, root, "foo");
     addPropertyProxy(root_scope, root, "buttonColor");
@@ -151,8 +155,6 @@ function initQml() {
                 addPropertyProxy(_qml_id_7_1_Rectangle_scope, _qml_id_7_1_Rectangle, "unused");
                 with (_qml_id_7_1_Rectangle_scope) {
                     applyBindings(_qml_id_7_1_Rectangle, {
-                        x: function() { return 420 },
-                        y: function() { return 100 + index * 28 },
                         width: function() { return 40 },
                         height: function() { return 24 },
                         color: function() { return buttonColor },
@@ -167,33 +169,43 @@ function initQml() {
             }
             return _qml_id_7_1_Rectangle;
         }
-        applyBindings(_qml_id_8_Text, {
-            width: function() { return 400 },
+        applyBindings(_qml_id_8_Item, {
             x: function() { return 220 },
-            y: function() { return 100 - 28 },
-            text: function() { return "Repeater with ListModel" }
+            y: function() { return 100 }
         });
-        _qml_id_9_Repeater._instantiateQml = function(parent, scope) {
-            var _qml_id_9_1_Text = createInstance(imports, "Text", parent);
+        applyBindings(_qml_id_8_1_Text, {
+            width: function() { return 400 },
+            text: function() { return "Column with ListModel Repeater" }
+        });
+        applyBindings(_qml_id_8_2_Column, {
+            y: function() { return 28 }
+        });
+        _qml_id_8_2_1_Repeater._instantiateQml = function(parent, scope) {
+            var _qml_id_8_2_1_1_Text = createInstance(imports, "Text", parent);
             with (scope) {
-                applyBindings(_qml_id_9_1_Text, {
-                    x: function() { return 220 },
-                    y: function() { return 100 + index * 28 },
+                applyBindings(_qml_id_8_2_1_1_Text, {
+                    height: function() { return 28 },
                     text: function() { return name }
                 });
             }
-            return _qml_id_9_1_Text;
+            return _qml_id_8_2_1_1_Text;
         }
-        applyBindings(_qml_id_9_Repeater, {
+        applyBindings(_qml_id_8_2_1_Repeater, {
             model: function() { return listModel }
         });
-        applyBindings(_qml_id_10_Text, {
-            width: function() { return 400 },
-            x: function() { return 420 },
-            y: function() { return 100 - 28 },
-            text: function() { return "Repeater with number" }
+        applyBindings(_qml_id_9_Item, {
+            x: function() { return 520 },
+            y: function() { return 100 }
         });
-        applyBindings(_qml_id_11_Repeater, {
+        applyBindings(_qml_id_9_1_Text, {
+            width: function() { return 400 },
+            text: function() { return "Column with number Repeater" }
+        });
+        applyBindings(_qml_id_9_2_Column, {
+            y: function() { return 28 },
+            spacing: function() { return 2 }
+        });
+        applyBindings(_qml_id_9_2_1_Repeater, {
             model: function() { return 8 },
             delegate: function() { return component }
         });

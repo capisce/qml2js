@@ -117,7 +117,6 @@ Rectangle {
         Rectangle {
             property var unused
 
-            x: 420 ; y: 100 + index * 28
             width: 40
             height: 24
             color: buttonColor
@@ -131,20 +130,34 @@ Rectangle {
         }
     }
 
-    Text { width: 400 ; x: 220 ; y: 100 - 28 ; text: "Repeater with ListModel" }
+    Item {
+        x: 220
+        y: 100
 
-    Repeater {
-        model: listModel
-        Text {
-            x: 220 ; y: 100 + index * 28
-            text: name
+        Text { width: 400 ; text: "Column with ListModel Repeater" }
+
+        Column {
+            y: 28
+            Repeater {
+                model: listModel
+                Text { height: 28 ; text: name }
+            }
         }
     }
 
-    Text { width: 400 ; x: 420 ; y: 100 - 28 ; text: "Repeater with number" }
+    Item {
+        x: 520
+        y: 100
 
-    Repeater {
-        model: 8
-        delegate: component
+        Text { width: 400 ; text: "Column with number Repeater" }
+
+        Column {
+            y: 28
+            spacing: 2
+            Repeater {
+                model: 8
+                delegate: component
+            }
+        }
     }
 }

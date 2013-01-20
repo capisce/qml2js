@@ -43,13 +43,15 @@ function addElement(collection, elementDescription)
         var handler = propertyDescription.hasOwnProperty("handler") ? propertyDescription.handler : null;
 
         var sinks = [];
-        var source = { object: this, property: name, sinks: sinks };
+        var source = { property: name, sinks: sinks };
+
+        that.metaObject.propertyNotifiers[name] = sinks;
 
         var triggerBindings =
             function()
             {
                 for (var i = 0, len = sinks.length; i < len; ++i)
-                    sinks[i]();
+                    sinks[i](value);
             };
 
         Object.defineProperty(this, name, {
@@ -73,8 +75,11 @@ function addElement(collection, elementDescription)
         description: elementDescription,
         constructor: function (parent)
         {
-            if (elementDescription.hasOwnProperty("parent"))
+            if (elementDescription.hasOwnProperty("parent")) {
                 collection[elementDescription.parent].constructor.call(this, parent);
+            } else {
+                this.metaObject = { propertyNotifiers: {} };
+            }
 
             var that = this;
 
@@ -86,9 +91,8 @@ function addElement(collection, elementDescription)
                 }
             }
 
-            if (elementDescription.hasOwnProperty("constructor")) {
-                elementDescription.constructor.call(that, parent);
-            }
+            if (elementDescription.hasOwnProperty("constructor"))
+                elementDescription.constructor.call(this, parent);
 
             if (elementDescription.hasOwnProperty("properties")) {
                 for (prop in elementDescription.properties) {
@@ -97,6 +101,14 @@ function addElement(collection, elementDescription)
                         propertyDescription.handler.call(that, that[prop]);
                 }
             }
+        },
+        childAdded: function (child)
+        {
+            if (elementDescription.hasOwnProperty("parent"))
+                collection[elementDescription.parent].childAdded.call(this, child);
+
+            if (elementDescription.hasOwnProperty("childAdded"))
+                elementDescription.childAdded.call(this, child);
         },
         applyBindings: function (bindings)
         {
@@ -111,6 +123,12 @@ function addElement(collection, elementDescription)
                     this[binding] = value;
                 }
             }
+        },
+        addListener: function (property, callback)
+        {
+            var notifiers = this.metaObject.propertyNotifiers[property];
+            if (notifiers)
+                notifiers.push(callback);
         },
         addProperty: function (prop)
         {
@@ -127,8 +145,11 @@ addElement(basicelements,
         name: "Element",
         constructor: function(parent) {
             this.priv = { parent: parent, children: [] }
-            if (parent)
-                parent.priv.children.push(this);
+        },
+        childAdded: function(child) {
+            if (!child)
+                console.log("child added: " + child);
+            this.priv.children.push(child);
         }
     });
 
@@ -180,8 +201,6 @@ addElement(basicelements, { parent: "Element", name: "ListElement" });
             if (!this.model || !delegate)
                 return;
 
-            console.log("can instantiate: " + this.hasOwnProperty("_instantiateQml"));
-
             if (typeof this.model === "number") {
                 for (var i = 0; i < this.model; ++i) {
                     delegate._instantiateQml(this.priv.parent, { index: i });
@@ -190,11 +209,13 @@ addElement(basicelements, { parent: "Element", name: "ListElement" });
                 var children = this.model.priv.children;
                 for (var i = 0, len = children.length; i < len; ++i) {
                     var item = children[i];
+                    if (!item)
+                        continue; // ????
                     var scope = { index: i };
                     var props = Object.getOwnPropertyNames(item);
                     for (var j = 0, len = props.length; j < len; ++j) {
                         var property = props[j];
-                        if (property === "priv" || property === "metaElement")
+                        if (property === "priv" || property === "metaElement" || property === "metaObject")
                             continue;
                         addPropertyProxy(scope, item, property);
                     }
@@ -214,6 +235,47 @@ addElement(basicelements, { parent: "Element", name: "ListElement" });
             properties: {
                 model: { value: null, handler: updateRepeater },
                 delegate: { value: null, handler: updateRepeater }
+            }
+        });
+
+    var updateColumn =
+        function()
+        {
+            var children = this.priv.children;
+            var y = 0;
+            for (var i = 0, len = children.length; i < len; ++i) {
+                var child = children[i];
+                if (child.metaElement.description.name === "Repeater")
+                    continue;
+                if (child.height) {
+                    child.y = y;
+                    y += child.height + this.spacing;
+                } else {
+                    child.y = 80;
+                }
+            }
+        }
+
+    addElement(basicelements,
+        {
+            parent: "Item",
+            name: "Column",
+            properties: {
+                spacing: { value: 0, handler: updateColumn }
+            },
+            constructor: function(parent) {
+                var that = this;
+                this.priv.rowCallback = function()
+                {
+                    updateColumn.call(that);
+                }
+            },
+            childAdded: function(child) {
+                if (child.metaElement.description.name === "Repeater")
+                    return;
+                if (child.height > 0)
+                    this.priv.rowCallback();
+                addListener(child, "height", this.priv.rowCallback);
             }
         });
 
@@ -401,6 +463,10 @@ function createInstance(scope, elementName, parent)
         }
     }
 
+    if (object && parent) {
+        parent.metaElement.childAdded.call(parent, object);
+    }
+
     return object;
 }
 
@@ -412,6 +478,11 @@ function applyBindings(obj, bindings)
 function addProperty(obj, property)
 {
     obj.metaElement.addProperty.call(obj, property);
+}
+
+function addListener(obj, property, callback)
+{
+    obj.metaElement.addListener.call(obj, property, callback);
 }
 
 function addPropertyProxy(scope, obj, property)

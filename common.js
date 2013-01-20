@@ -4,112 +4,6 @@ var forEach = function(array, func)
         func(array[i]);
     }
 }
-
-/*
-function Signal(element)
-{
-    this.listeners = [];
-    this.element = element;
-
-    var that = this;
-
-    this.emit =
-        function() {
-            var args = []
-            forEach(arguments, function(arg) { args.push(arg); });
-            forEach(that.listeners, function(listener) { listener.callback.apply(listener.object, args); });
-        }
-
-    this.addListener =
-        function(listener) {
-            that.listeners.push(listener);
-        }
-
-    element.name = this;
-}
-
-function Property(element, name)
-{
-    this.element = element;
-
-    var capitalized = name.substring(0, 1).toUpperCase() + name.substring(1);
-
-    console.log("Adding property " + name + ", with setter set" + capitalized);
-
-    var that = this;
-
-    element["set" + capitalized] =
-        function(value) {
-            if (value === that.element[name])
-                return;
-            that.element[name] = value;
-            that.signal.emit(value);
-        }
-
-    this.signal = element[name + "Changed"] = 
-        new Signal(element);
-
-    element[name + "Property"] = this;
-}
-
-function connect(sender, signal, receiver, slot)
-{
-    signal.addListener({ callback: slot, object: receiver });
-}
-
-function addBindings(object, bindings)
-{
-    for (binding in bindings) {
-        if (object.hasOwnProperty(binding)) {
-            console.log(object.name + "." + binding + " = " + bindings[binding]);
-            object[binding] = bindings[binding];//binding.func.call(object);
-            delete bindings[binding]
-        }
-    }
-}
-
-function Item(bindings)
-{
-    //this.addProperty("x", 0);
-    this.x = 0;
-    this.y = 0;
-    this.width = 100;
-    this.height = 100;
-
-    addBindings(this, bindings);
-}
-
-function Rectangle(bindings)
-{
-    Item.call(this, bindings);
-
-    this.colorProperty = new Property(this, "color");
-    this.color = 'olive';
-    this["color"] = "green";
-
-    for (x in bindings) {
-        if (this.hasOwnProperty(x) && !Item.hasOwnProperty(x))
-            console.log("rect." + x + " = " + bindings[x]);
-    }
-
-    var element = document.createElement('div');
-    element.style.backgroundColor = "olive";
-    element.style.width = "500px";
-    element.style.height = "100px";
-
-    var child = document.createTextNode("Here I am!");
-    element.appendChild(child);
-
-    var root = document.getElementById('root');
-    root.appendChild(element);
-
-    console.log("Child appended");
-    this.element = element;
-}
-
-Rectangle.prototype = Object.create(Item.prototype);
-*/
-
 basicelements = {}
 
 function addElement(collection, elementDescription)
@@ -338,11 +232,13 @@ function createAnimation()
     var step = 1 / (60 * this.duration * 0.001);
     var that = this;
 
+    var loops = that.loops;
+
     function process()
     {
         if (t >= 1) {
             that.target[that.property] = that.to;
-            if (that.loops === -1 || --that.loops > 0) {
+            if (that.loops === -1 || --loops > 0) {
                 t = 0
             } else {
                 that.running = false;
@@ -411,92 +307,6 @@ function applyBindings(obj, bindings)
 
 function initialize()
 {
-    /*
-    var rect = new Rectangle();
-
-    connect(rect, rect.colorChanged, null, function(value) { console.log("New color: " + value) })
-
-    rect.setColor("maroon")
-    rect.setColor("blue")
-
-    console.log("Initialized: " + rect.color);
-
-    var item = new Rectangle({x:2, y:2, color:"red"})
-    var item = 2
-    var obj = {};
-
-    Object.defineProperty( obj, "value", {
-          value: true,
-          writable: false,
-          enumerable: true,
-          configurable: true
-    });
-
-    (function(){
-          var name = "John";
-           
-            Object.defineProperty( obj, "name", {
-                    get: function(){ return name; },
-                    set: function(value){ name = value; }
-              });
-    })();
-
-    console.log( obj.value )
-    // true
-
-    console.log( obj.name );
-    // John
-
-    if (typeof Object.defineProperty == 'function')
-        console.log("Browser supports defineProperty!");
-    */
-
-    var scope = [ basicelements ];
-/*
-    var obj = createInstance(scope, "Rectangle");
-
-    console.log(Object.getOwnPropertyNames(basicelements));
-    console.log(Object.getOwnPropertyNames(obj));
-
-    obj.color = "olive";
-    obj.x = 40;
-    obj.y = 20;
-    obj.width = 200;
-    obj.height = 200;
-
-    var child = createInstance(scope, "Rectangle", obj);
-    applyBindings(child, { color: "#FF3300", width: 40, height: function() { return 60; } });
-
-    var child2 = createInstance(scope, "Rectangle", obj);
-    applyBindings(child2, { color: "#FF0033", width: 40, height: 40, x: function() { return child.x + 80; }, y: function() { return 1.5 * child.x; }, width: 40, height: function() { return 60; } });
-*/
-
     initQml();
-
-/*
-    var o1 = { prototype: { x: 2 } };
-
-    o2 = Object.create(o1)
-    o2.x = 2
-
-    var y = 2;
-
-    Object.defineProperty(o2, "y", {
-        get: function() { console.log("y observed as being " + y); return y; },
-        set: function(v) { if (v === y) return; console.log("y changed from " + y + " to " + v); y = v; }
-    });
-
-    o2.y = 4
-    var z = o2.y
-    y = 3
-    o2.y = 2
-    z = o2.y
-
-    var f
-    with (o2) { f = function() {var w = o2.y; console.log("i2"); console.log("x: " + x + ", y: " + y); } }
-
-    console.log("calling f");
-    f();
-*/
 }
 

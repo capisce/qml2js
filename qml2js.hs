@@ -31,9 +31,6 @@ spaceCharacter = char ' '
 spaces :: Parser ()
 spaces = skipMany1 spaceCharacter
 
--- symbol :: Parser Char
--- symbon = oneOf
-
 data QmlParseObjectAnnotation = QmlParseOnAnnotation String
 
 data QmlParseValue = QmlParseObject String (Maybe QmlParseObjectAnnotation) [QmlParseValue]
@@ -148,10 +145,6 @@ data QmlObject =
         propertyBindings :: [ (String, String) ]
     }
 
--- data QmlParseValue = QmlParseObject String (Maybe QmlParseObjectAnnotation) [QmlParseValue]
---                      | QmlParseBinding String String
---                      | QmlParsePropertyDeclaration String (Maybe String)
-
 getBinding :: QmlParseValue -> Maybe (String, String)
 getBinding (QmlParseBinding key value) = Just (key, value)
 getBinding (QmlParsePropertyDeclaration key (Just value)) = Just (key, value)
@@ -188,15 +181,6 @@ indent level = take (level * 4) (repeat ' ')
 removeEmpty = mapMaybe (\x -> if length x == 0 then Nothing else Just x)
 removeLast x = take ((length x) - 1) x
 
-flatten str = str
-
---     let lines = removeEmpty $ map stripSurroundingSpaces (splitOn "\n" str)
---     in if null lines
---        then ""
---        else let headStripped = if (head . head) lines == '{' then (tail . head) lines : tail lines else lines
---                 tailStripped = if (last . last) headStripped == '}' then removeLast headStripped ++ [ removeLast (last headStripped) ] else headStripped
---             in concat (intersperse "; " (removeEmpty tailStripped))
-
 generateJsForBinding :: Int -> (String, String) -> String
 generateJsForBinding indentLevel (key, code) =
     let i1 = indent indentLevel
@@ -212,10 +196,6 @@ generateConstructors parent obj =
         if not $ null children
         then concat (map (generateConstructors (", " ++ objectId obj)) children)
         else []
-
--- applyBindings(child2, {
---    color: "#FF0033",
---    width: 40, height: 40, x: function() { return child.x + 80; }, y: function() { return 1.5 * child.x; }, width: 40, height: function() { return 60; } });
 
 generateBindings :: QmlObject -> String
 generateBindings obj =
@@ -248,6 +228,3 @@ processFile file = do
     putStrLn code
     writeFile "qml.js" code
 
-main :: IO ()
-main = do args <- getArgs
-          check (args !! 0)

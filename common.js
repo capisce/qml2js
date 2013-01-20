@@ -238,46 +238,49 @@ addElement(basicelements, { parent: "Element", name: "ListElement" });
             }
         });
 
-    var updateColumn =
-        function()
-        {
-            var children = this.priv.children;
-            var y = 0;
-            for (var i = 0, len = children.length; i < len; ++i) {
-                var child = children[i];
-                if (child.metaElement.description.name === "Repeater")
-                    continue;
-                if (child.height) {
-                    child.y = y;
-                    y += child.height + this.spacing;
-                } else {
-                    child.y = 80;
+    var addLayouter = function (name, position, size) {
+        var relayout =
+            function()
+            {
+                var children = this.priv.children;
+                var p = 0;
+                for (var i = 0, len = children.length; i < len; ++i) {
+                    var child = children[i];
+                    if (child.metaElement.description.name === "Repeater")
+                        continue;
+                    if (child.height) {
+                        child[position] = p;
+                        p += child[size] + this.spacing;
+                    }
                 }
             }
-        }
 
-    addElement(basicelements,
-        {
-            parent: "Item",
-            name: "Column",
-            properties: {
-                spacing: { value: 0, handler: updateColumn }
-            },
-            constructor: function(parent) {
-                var that = this;
-                this.priv.rowCallback = function()
-                {
-                    updateColumn.call(that);
+        addElement(basicelements,
+            {
+                parent: "Item",
+                name: name,
+                properties: {
+                    spacing: { value: 0, handler: relayout }
+                },
+                constructor: function(parent) {
+                    var that = this;
+                    this.priv.relayout = function()
+                    {
+                        relayout.call(that);
+                    }
+                },
+                childAdded: function(child) {
+                    if (child.metaElement.description.name === "Repeater")
+                        return;
+                    if (child[size] > 0)
+                        this.priv.relayout();
+                    addListener(child, size, this.priv.relayout);
                 }
-            },
-            childAdded: function(child) {
-                if (child.metaElement.description.name === "Repeater")
-                    return;
-                if (child.height > 0)
-                    this.priv.rowCallback();
-                addListener(child, "height", this.priv.rowCallback);
-            }
-        });
+            });
+    };
+
+    addLayouter("Column", "y", "height");
+    addLayouter("Row", "x", "width");
 
     var imageSetter = function(v)
     {

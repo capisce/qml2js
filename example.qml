@@ -134,13 +134,13 @@ Rectangle {
         x: 220
         y: 100
 
-        Text { width: 400 ; text: "Column with ListModel Repeater" }
+        Text { width: 400 ; text: "Row with ListModel Repeater" }
 
-        Column {
+        Row {
             y: 28
             Repeater {
                 model: listModel
-                Text { height: 28 ; text: name }
+                Text { width: 80 ; height: 28 ; text: name }
             }
         }
     }

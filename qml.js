@@ -25,8 +25,8 @@ function initQml() {
     var component = createInstance(imports, "Component", root);
     var _qml_id_8_Item = createInstance(imports, "Item", root);
     var _qml_id_8_1_Text = createInstance(imports, "Text", _qml_id_8_Item);
-    var _qml_id_8_2_Column = createInstance(imports, "Column", _qml_id_8_Item);
-    var _qml_id_8_2_1_Repeater = createInstance(imports, "Repeater", _qml_id_8_2_Column);
+    var _qml_id_8_2_Row = createInstance(imports, "Row", _qml_id_8_Item);
+    var _qml_id_8_2_1_Repeater = createInstance(imports, "Repeater", _qml_id_8_2_Row);
     var _qml_id_9_Item = createInstance(imports, "Item", root);
     var _qml_id_9_1_Text = createInstance(imports, "Text", _qml_id_9_Item);
     var _qml_id_9_2_Column = createInstance(imports, "Column", _qml_id_9_Item);
@@ -175,15 +175,16 @@ function initQml() {
         });
         applyBindings(_qml_id_8_1_Text, {
             width: function() { return 400 },
-            text: function() { return "Column with ListModel Repeater" }
+            text: function() { return "Row with ListModel Repeater" }
         });
-        applyBindings(_qml_id_8_2_Column, {
+        applyBindings(_qml_id_8_2_Row, {
             y: function() { return 28 }
         });
         _qml_id_8_2_1_Repeater._instantiateQml = function(parent, scope) {
             var _qml_id_8_2_1_1_Text = createInstance(imports, "Text", parent);
             with (scope) {
                 applyBindings(_qml_id_8_2_1_1_Text, {
+                    width: function() { return 80 },
                     height: function() { return 28 },
                     text: function() { return name }
                 });

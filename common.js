@@ -185,7 +185,7 @@ function addElement(collection, elementDescription)
         {
             for (binding in bindings) {
                 var value = bindings[binding];
-                if (typeof value === "function") {
+                if (typeof value === "function" && this.hasOwnProperty(binding)) {
                     propertyController.test = true;
                     this[binding] = value();
                     propertyController.test = false;
@@ -213,7 +213,6 @@ addElement(basicelements,
         return suffix === undefined ?
             function(value) {
                 this.priv.element.style[key] = value;
-                console.log("Setting style " + key + " of div " + this.priv.element + " to " + value);
             } :
             function(value) {
                 this.priv.element.style[key] = value + suffix;
@@ -232,17 +231,14 @@ addElement(basicelements,
 
                 element.style.position = "absolute";
 
-                //var child = document.createTextNode("Here I am!");
-                //element.appendChild(child);
                 root.appendChild(element);
-
-                console.log("Created div " + element + " as child of " + parent);
             },
             properties: {
                 x: { value: 0, handler: styleSetterPixelDimension("left") },
                 y: { value: 0, handler: styleSetterPixelDimension("top") },
                 width: { value: 100, handler: styleSetterPixelDimension("width") },
-                height: { value: 100, handler: styleSetterPixelDimension("height") }
+                height: { value: 100, handler: styleSetterPixelDimension("height") },
+                opacity: { value: 1, handler: styleSetter("opacity") }
             }
         });
 
@@ -252,12 +248,42 @@ addElement(basicelements,
             name: "Rectangle", 
             properties: {
                 color: { value: "white", handler: styleSetter("backgroundColor") },
-               foo: { value: "bar", handler: function(v) { console.log("foo value changed:" + v); }  }
+            },
+            constructor: function() {}
+        });
+
+    var textSetter = function(v)
+    {
+        if (this.priv.textNode)
+            this.priv.element.removeChild(this.priv.textNode);
+        var text = document.createTextNode(v);
+        this.priv.element.appendChild(text);
+    }
+
+    addElement(basicelements,
+        {
+            parent: "Item",
+            name: "Text",
+            properties: {
+                text: { value: "", handler: textSetter }
             },
             constructor: function() {
+                this.priv.textNode = null;
             }
         });
 })();
+
+addElement(basicelements,
+    {
+        parent: "Item",
+        name: "MouseArea",
+        properties: {
+        },
+        constructor: function() {
+            var that = this;
+            this.priv.element.onclick = function() { that.onClicked(); }
+        }
+    });
 
 var animations = [];
 var animationsRunning = false;
@@ -268,7 +294,7 @@ function animate()
     animations = [];
 
     for (var i = 0, len = running.length; i < len; ++i) {
-        if (running[i].running) {
+        if (running[i].running()) {
             running[i].process();
             animations.push(running[i]);
         }
@@ -307,9 +333,6 @@ function startAnimation(animation)
 
 function createAnimation()
 {
-    console.log("creating animation for property " + this.property + " of target " + this.target + " with duration " + this.duration);
-
-    var running = true;
     var t = 0;
     var delta = this.to - this.from;
     var step = 1 / (60 * this.duration * 0.001);
@@ -317,17 +340,22 @@ function createAnimation()
 
     function process()
     {
-        t += step;
-        
         if (t >= 1) {
             that.target[that.property] = that.to;
-            running = false;
+            if (that.loops === -1 || --that.loops > 0) {
+                t = 0
+            } else {
+                that.running = false;
+            }
         } else {
             that.target[that.property] = that.from + delta * t;
         }
+
+        t += step;
+        
     }
 
-    return { running: running, process: process }
+    return { running: function() { return that.running; }, process: process }
 }
 
 addElement(basicelements,
@@ -445,6 +473,7 @@ function initialize()
 
     initQml();
 
+/*
     var o1 = { prototype: { x: 2 } };
 
     o2 = Object.create(o1)
@@ -468,5 +497,6 @@ function initialize()
 
     console.log("calling f");
     f();
+*/
 }
 

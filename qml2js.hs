@@ -59,13 +59,18 @@ parseExpression = do
     str <- many (noneOf ";\n}")
     return (stripSurroundingSpaces str)
 
+parseBlockInner :: Parser String
+parseBlockInner = do
+    a <- many1 (noneOf "{}")
+    b <- option "" parseBlock
+    return $ concat [a, b]
+
 parseBlock :: Parser String
 parseBlock = do
     a <- string "{"
-    b <- many space
-    c <- (parseBlock <|> many (noneOf "}"))
-    d <- string "}"
-    return $ concat [a, b, c, d]
+    b <- many (parseBlockInner <|> parseBlock)
+    c <- string "}"
+    return $ a ++ concat b ++ c
 
 parseCode :: Parser String
 parseCode = parseBlock <|> parseExpression
@@ -183,18 +188,21 @@ indent level = take (level * 4) (repeat ' ')
 removeEmpty = mapMaybe (\x -> if length x == 0 then Nothing else Just x)
 removeLast x = take ((length x) - 1) x
 
-flatten str =
-    let lines = removeEmpty $ map stripSurroundingSpaces (splitOn "\n" str)
-    in if null lines
-       then ""
-       else let headStripped = if (head . head) lines == '{' then (tail . head) lines : tail lines else lines
-                tailStripped = if (last . last) headStripped == '}' then removeLast headStripped ++ [ removeLast (last headStripped) ] else headStripped
-            in concat (intersperse "; " (removeEmpty tailStripped))
+flatten str = str
+
+--     let lines = removeEmpty $ map stripSurroundingSpaces (splitOn "\n" str)
+--     in if null lines
+--        then ""
+--        else let headStripped = if (head . head) lines == '{' then (tail . head) lines : tail lines else lines
+--                 tailStripped = if (last . last) headStripped == '}' then removeLast headStripped ++ [ removeLast (last headStripped) ] else headStripped
+--             in concat (intersperse "; " (removeEmpty tailStripped))
 
 generateJsForBinding :: Int -> (String, String) -> String
 generateJsForBinding indentLevel (key, code) =
     let i1 = indent indentLevel
-    in i1 ++ key ++ ": function() { return " ++ (flatten code) ++ " }"
+        stripped = stripSurroundingSpaces code
+        hasBraces = code !! 0 == '{'
+    in i1 ++ key ++ ": function() " ++ if hasBraces then stripped else "{ return " ++ stripped ++ " }"
 
 generateConstructors :: String -> QmlObject -> String
 generateConstructors parent obj =

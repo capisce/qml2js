@@ -1,5 +1,5 @@
 Rectangle {
-    id: "root"
+    id: root
     color: "olive"
 
     width: 800
@@ -11,30 +11,31 @@ Rectangle {
         width: 40
         height: 40
 
+        NumberAnimation on x {
+            from: 0
+            to: 800
+            duration: 10000
+            running: true
+        }
+
         Rectangle {
-            id: "inner"
+            id: inner
             color: "red"
 
             width: 20
             height: 20
 
-            property var x: 0
-            property var y: x > 25 ? 100 : 0
+            property var foo: 0
+            property var bar: 0 > 25 ? 100 : 0
             
-            NumberAnimation on x {
-                from: 0
-                to: 50
-                duration: 10000
-            }
-
-            Behavior on y { NumberAnimation { duration: 5000 } }
+            Behavior on bar { NumberAnimation { duration: 5000 } }
 
             onXChanged: {
-                console.log('x changed: ' + x)
+                console.log('x changed: ' + 0)
             }
 
             onYChanged: {
-                console.log('y changed: ' + y)
+                console.log('y changed: ' + 0)
             }
         }
     }

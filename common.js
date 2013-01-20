@@ -259,15 +259,99 @@ addElement(basicelements,
         });
 })();
 
+var animations = [];
+var animationsRunning = false;
+
+function animate() 
+{
+    var running = animations; 
+    animations = [];
+
+    for (var i = 0, len = running.length; i < len; ++i) {
+        if (running[i].running) {
+            running[i].process();
+            animations.push(running[i]);
+        }
+    }
+}
+
+function startAnimation(animation)
+{
+    animations.push(animation);
+
+    if (!animationsRunning) {
+        var interval_60hz = 1000 / 60.0 ;
+        var animFrame = window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame    ||
+            window.oRequestAnimationFrame      ||
+            window.msRequestAnimationFrame     ||
+            function(callback) { setTimeout(callback, interval_60hz); };
+
+        var recursiveAnim = function() {
+            animate();
+
+            if (animations.length === 0) {
+                animationsRunning = false;
+            } else {
+                animFrame(recursiveAnim);
+            }
+        }
+
+        // start the mainloop
+        animFrame(recursiveAnim);
+
+        animationsRunning = true;
+    }
+}
+
+function createAnimation()
+{
+    console.log("creating animation for property " + this.property + " of target " + this.target + " with duration " + this.duration);
+
+    var running = true;
+    var t = 0;
+    var delta = this.to - this.from;
+    var step = 1 / (60 * this.duration * 0.001);
+    var that = this;
+
+    function process()
+    {
+        t += step;
+        
+        if (t >= 1) {
+            that.target[that.property] = that.to;
+            running = false;
+        } else {
+            that.target[that.property] = that.from + delta * t;
+        }
+    }
+
+    return { running: running, process: process }
+}
+
 addElement(basicelements,
     {
         parent: "Element",
         name: "NumberAnimation", 
         properties: {
             target: {},
+            property: {},
             duration: { value: 1000 },
             from: { value: 0 },
-            to: { value: 1 }
+            to: { value: 1 },
+            running: { value: false, handler: function(v) { if (v) { startAnimation(createAnimation.call(this)) } } },
+            loops: { value: 1 }
+        }
+    });
+
+addElement(basicelements,
+    {
+        parent: "Element",
+        name: "Behavior", 
+        properties: {
+            target: {},
+            property: {}
         }
     });
 
@@ -284,7 +368,6 @@ function createInstance(scope, elementName, parent)
     var object = null;
     for (var i = 0, len = scope.length; i < len; ++i) {
         if (scope[i].hasOwnProperty(elementName)) {
-            console.log("invoking constructor with parent " + parent)
             object = new scope[i][elementName].constructor(parent);
             break;
         }
@@ -341,6 +424,7 @@ function initialize()
     */
 
     var scope = [ basicelements ];
+/*
     var obj = createInstance(scope, "Rectangle");
 
     console.log(Object.getOwnPropertyNames(basicelements));
@@ -352,21 +436,14 @@ function initialize()
     obj.width = 200;
     obj.height = 200;
 
-    /*
-    child.color = "#FF3300"
-    child.width = 40
-    child.height = 40
-    */
-
     var child = createInstance(scope, "Rectangle", obj);
     applyBindings(child, { color: "#FF3300", width: 40, height: function() { return 60; } });
 
-    console.log("child.x:", child.x);
-
     var child2 = createInstance(scope, "Rectangle", obj);
     applyBindings(child2, { color: "#FF0033", width: 40, height: 40, x: function() { return child.x + 80; }, y: function() { return 1.5 * child.x; }, width: 40, height: function() { return 60; } });
+*/
 
-    console.log("child2.x:", child2.x);
+    initQml();
 
     var o1 = { prototype: { x: 2 } };
 
@@ -391,26 +468,5 @@ function initialize()
 
     console.log("calling f");
     f();
-
-    function animate() 
-    {
-        if (child.x < 80) child.x += 1;
-    }
-
-    var interval_60hz = 1000 / 60.0 ;
-    var animFrame = window.requestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame    ||
-        window.oRequestAnimationFrame      ||
-        window.msRequestAnimationFrame     ||
-        function(callback) { setTimeout(callback, interval_60hz); };
-
-    var recursiveAnim = function() {
-        animate();
-        animFrame(recursiveAnim);
-    }
-
-    // start the mainloop
-    animFrame(recursiveAnim);
 }
 

@@ -156,24 +156,27 @@ getOwnProperty :: QmlParseValue -> Maybe String
 getOwnProperty (QmlParsePropertyDeclaration key _) = Just key
 getOwnProperty _ = Nothing
 
-getObject :: String -> QmlParseValue -> QmlObject
-getObject baseId (QmlParseObject qmlType _ children) =
-    let bindings = mapMaybe getBinding children
+getOnBinding :: String -> QmlParseObjectAnnotation -> [ (String, String) ]
+getOnBinding parentId (QmlParseOnAnnotation property) = [ ("target", parentId), ("property", show property) ]
+
+getObject :: String -> String -> QmlParseValue -> QmlObject
+getObject parentId baseId (QmlParseObject qmlType onBinding children) =
+    let bindings = maybe [] (getOnBinding parentId) onBinding ++ mapMaybe getBinding children 
         maybeId = find (\(key, _) -> key == "id") bindings
         childObjects = filter (\x -> case x of (QmlParseObject _ _ _) -> True ; _ -> False) children
         numChildObjects = length childObjects
         id = case maybeId of
                 Nothing -> baseId
-                Just (_, value) -> read value
+                Just (_, value) -> value
         childIds = map (\x -> baseId ++ "_" ++ show x) [1..]
     in QmlObject {
            objectType = qmlType,
            objectId = id,
-           childObjects = zipWith getObject childIds childObjects,
+           childObjects = zipWith (getObject id) childIds childObjects,
            ownProperties = mapMaybe getOwnProperty children,
            propertyBindings = bindings
        }
-getObject _ _ = error "Root is not an object"
+getObject _ _ _ = error "Root is not an object"
 
 indent level = take (level * 4) (repeat ' ')
 
@@ -191,29 +194,51 @@ flatten str =
 generateJsForBinding :: Int -> (String, String) -> String
 generateJsForBinding indentLevel (key, code) =
     let i1 = indent indentLevel
-    in i1 ++ key ++ ": (function() { return " ++ (flatten code) ++ " })()"
+    in i1 ++ key ++ ": function() { return " ++ (flatten code) ++ " }"
 
-generateJs :: Int -> QmlObject -> String
-generateJs indentLevel obj =
-    let i1 = indent indentLevel
-        i2 = indent (indentLevel + 1)
+generateConstructors :: String -> QmlObject -> String
+generateConstructors parent obj =
+    let i1 = indent 1
+        children = childObjects obj
+    in i1 ++ "var " ++ objectId obj ++ " = createInstance(scope, \"" ++ objectType obj ++ "\"" ++ parent ++ ");\n" ++
+        if not $ null children
+        then concat (map (generateConstructors (", " ++ objectId obj)) children)
+        else []
+
+-- applyBindings(child2, {
+--    color: "#FF0033",
+--    width: 40, height: 40, x: function() { return child.x + 80; }, y: function() { return 1.5 * child.x; }, width: 40, height: function() { return 60; } });
+
+generateBindings :: QmlObject -> String
+generateBindings obj =
+    let i1 = indent 1
         bindings = propertyBindings obj
         children = childObjects obj
-        childJsForBindings = (map (generateJsForBinding (indentLevel + 1)) bindings)
-        childJsForChildren =
-            if not $ null children
-            then [i2 ++ "children: [\n" ++ concat (intersperse ",\n" (map (generateJs (indentLevel + 2)) children)) ++ "\n" ++ i2 ++ "]"]
-            else []
-        childJs = concat (intersperse ",\n" (childJsForBindings ++ childJsForChildren))
-        core = if not $ null childJs then "({\n" ++ childJs ++ "\n" ++ i1 ++ "})" else "()"
-    in i1 ++ objectId obj ++ " = new " ++ objectType obj ++ core
+        jsForBindings = (map (generateJsForBinding 2) bindings)
+        core = if not $ null bindings
+               then i1 ++ "applyBindings(" ++ objectId obj ++ ", {\n" ++
+                  concat (intersperse ",\n" jsForBindings) ++
+                  "\n" ++ i1 ++ "});\n"
+               else ""
+    in
+        core ++ concat (map generateBindings children)
+    
+generateJs :: QmlObject -> String
+generateJs obj =
+    let i1 = indent 1
+        bindings = propertyBindings obj
+        children = childObjects obj
+    in "function initQml() {\n" ++ i1 ++ "var scope = [ basicelements ];\n" ++
+       generateConstructors "" obj ++ generateBindings obj ++ "}\n"
 
-checkFile file = do
+processFile file = do
     x <- readFile file
     putStrLn x
     let y = parseExpr parseQmlValue "qml" x
-    putStrLn (y show)
-    putStrLn (y (((++) "var ") . (generateJs 0) . (getObject "_qml_id")))
+    y (putStrLn . show)
+    let code = y (generateJs . (getObject "" "_qml_id"))
+    putStrLn code
+    writeFile "qml.js" code
 
 main :: IO ()
 main = do args <- getArgs

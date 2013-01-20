@@ -166,15 +166,18 @@ addElement(basicelements,
             name: "Rectangle", 
             properties: {
                 color: { value: "white", handler: styleSetter("backgroundColor") },
+                radius: { value: 0, handler: styleSetterPixelDimension("borderRadius") }
             },
             constructor: function() {}
         });
 
     var textSetter = function(v)
     {
-        if (this.priv.textNode)
+        if (this.priv.textNode) {
             this.priv.element.removeChild(this.priv.textNode);
-        var text = document.createTextNode(v);
+            delete this.priv.textNode;
+        }
+        var text = this.priv.textNode = document.createTextNode(v);
         this.priv.element.appendChild(text);
     }
 

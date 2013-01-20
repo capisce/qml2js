@@ -63,9 +63,29 @@ Rectangle {
         }
     }
 
-    Text {
+    Rectangle {
         x: 20 ; y: 100
-        text: "Hello QML2JS"
+        width: 110
+        height: 24
+        color: "#37f"
+        radius: 8
+
+        property var enabled: false
+
+        Text {
+            x: 4
+            y: 4
+            text: enabled ? "QML Rocks!" : "Hello QML2JS"
+        }
+
+        MouseArea {
+            width: parent.width
+            height: parent.height
+
+            onClicked: {
+                enabled = !enabled
+            }
+        }
     }
 
     NumberAnimation on opacity {

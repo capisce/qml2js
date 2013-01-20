@@ -63,16 +63,19 @@ Rectangle {
         }
     }
 
+    property var buttonColor: "#37f"
+
     Rectangle {
         x: 20 ; y: 100
-        width: 110
+        width: 140
         height: 24
-        color: "#37f"
+        color: buttonColor
         radius: 8
 
         property var enabled: false
 
         Text {
+            width: 400
             x: 4
             y: 4
             text: enabled ? "QML Rocks!" : "Hello QML2JS"
@@ -93,5 +96,55 @@ Rectangle {
         from: 0
         to: 1
         running: false
+    }
+
+    ListModel {
+        id: listModel
+        ListElement {
+            name: "Element A"
+        }
+        ListElement {
+            name: "Element B"
+        }
+        ListElement {
+            name: "Element C"
+        }
+    }
+
+    Component {
+        id: component
+
+        Rectangle {
+            property var unused
+
+            x: 420 ; y: 100 + index * 28
+            width: 40
+            height: 24
+            color: buttonColor
+            radius: 8
+
+            Text {
+                x: 4
+                y: 4
+                text: index
+            }
+        }
+    }
+
+    Text { width: 400 ; x: 220 ; y: 100 - 28 ; text: "Repeater with ListModel" }
+
+    Repeater {
+        model: listModel
+        Text {
+            x: 220 ; y: 100 + index * 28
+            text: name
+        }
+    }
+
+    Text { width: 400 ; x: 420 ; y: 100 - 28 ; text: "Repeater with number" }
+
+    Repeater {
+        model: 8
+        delegate: component
     }
 }

@@ -1,3 +1,25 @@
+/*
+   Copyright (c) 2013 Samuel Rødal
+
+   Permission is hereby granted, free of charge, to any person obtaining a
+   copy of this software and associated documentation files (the "Software"),
+   to deal in the Software without restriction, including without limitation
+   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
+*/
+
 var forEach = function(array, func)
 {
     for (var i = 0, len = array.length; i < len; ++i) {
@@ -103,10 +125,16 @@ function addElement(collection, elementDescription)
 addElement(basicelements,
     {
         name: "Element",
-        constructor: function() {
-            this.priv = {}
+        constructor: function(parent) {
+            this.priv = { parent: parent, children: [] }
+            if (parent)
+                parent.priv.children.push(this);
         }
     });
+
+addElement(basicelements, { parent: "Element", name: "Component" });
+addElement(basicelements, { parent: "Element", name: "ListModel" });
+addElement(basicelements, { parent: "Element", name: "ListElement" });
 
 (function() {
     var styleSetter = function(key, suffix) {
@@ -139,6 +167,53 @@ addElement(basicelements,
                 width: { value: 100, handler: styleSetterPixelDimension("width") },
                 height: { value: 100, handler: styleSetterPixelDimension("height") },
                 opacity: { value: 1, handler: styleSetter("opacity") }
+            }
+        });
+
+    var updateRepeater =
+        function()
+        {
+            var delegate = this.delegate;
+            if (!delegate && this.hasOwnProperty("_instantiateQml"))
+                delegate = this;
+
+            if (!this.model || !delegate)
+                return;
+
+            console.log("can instantiate: " + this.hasOwnProperty("_instantiateQml"));
+
+            if (typeof this.model === "number") {
+                for (var i = 0; i < this.model; ++i) {
+                    delegate._instantiateQml(this.priv.parent, { index: i });
+                }
+            } else {
+                var children = this.model.priv.children;
+                for (var i = 0, len = children.length; i < len; ++i) {
+                    var item = children[i];
+                    var scope = { index: i };
+                    var props = Object.getOwnPropertyNames(item);
+                    for (var j = 0, len = props.length; j < len; ++j) {
+                        var property = props[j];
+                        if (property === "priv" || property === "metaElement")
+                            continue;
+                        addPropertyProxy(scope, item, property);
+                    }
+                    delegate._instantiateQml(this.priv.parent, scope);
+                }
+            }
+        }
+
+    addElement(basicelements,
+        {
+            parent: "Element",
+            name: "Repeater",
+            constructor: function(parent) {
+                this.priv.repeaterChildren = []
+                this.priv.repeaterParent = parent
+            },
+            properties: {
+                model: { value: null, handler: updateRepeater },
+                delegate: { value: null, handler: updateRepeater }
             }
         });
 

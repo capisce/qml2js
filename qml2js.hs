@@ -276,3 +276,6 @@ processFile file = do
     putStrLn code
     writeFile "qml.js" code
 
+main = do
+    args <- getArgs
+    processFile $ head args

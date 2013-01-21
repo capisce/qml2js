@@ -122,6 +122,26 @@ parseQmlValue = parseObject
     <|> try parsePropertyDeclaration
     <|> parseBinding
 
+commentSection :: Parser String
+commentSection = do
+    many space
+    string "/*"
+    manyTill (anyChar <|> space) (string "*/")
+    many space
+
+codeAroundComments :: Parser String
+codeAroundComments = do
+    first <- many (noneOf "/")
+    many (try commentSection)
+    next <- anyChar
+    second <- many (noneOf "/")
+    return $ first ++ (next : second)
+
+removeComments :: Parser String
+removeComments = do
+    parts <- many codeAroundComments
+    return $ concat parts
+
 instance Show QmlParseValue where
     show val = case val of
         QmlParsePropertyDeclaration identifier maybeCode -> "property " ++ identifier ++ (maybe "" (\x -> " with code \"" ++ x ++ "\"") maybeCode)
@@ -270,7 +290,9 @@ generateJs obj =
 processFile file = do
     x <- readFile file
     putStrLn x
-    let y = parseExpr parseQmlValue "qml" x
+    let commentsStripped = parseExpr removeComments "qml" x
+    commentsStripped (putStrLn . (((++) "comments stripped: ")))
+    let y = parseExpr parseQmlValue "qml" (commentsStripped id)
     y (putStrLn . show)
     let code = y (generateJs . (getObject "" "_qml_id"))
     putStrLn code

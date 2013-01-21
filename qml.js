@@ -156,7 +156,7 @@ function initQml() {
                 addPropertyProxy(_qml_id_7_1_Rectangle_scope, _qml_id_7_1_Rectangle, "unused");
                 with (_qml_id_7_1_Rectangle_scope) {
                     applyBindings(_qml_id_7_1_Rectangle, {
-                        width: function() { return 40 },
+                        width: function() { return 80 / 2 },
                         height: function() { return 24 },
                         color: function() { return buttonColor },
                         radius: function() { return 8 }

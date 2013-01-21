@@ -1,3 +1,4 @@
+/* example.qml */
 Rectangle {
     id: root
     color: "olive"
@@ -117,7 +118,7 @@ Rectangle {
         Rectangle {
             property var unused
 
-            width: 40
+            width: 80 / 2
             height: 24
             color: buttonColor
             radius: 8
@@ -129,6 +130,8 @@ Rectangle {
             }
         }
     }
+
+    /* list model repeater */
 
     Item {
         x: 220
@@ -144,6 +147,10 @@ Rectangle {
             }
         }
     }
+
+    /*
+       nested repeaters
+     */
 
     Item {
         x: 520

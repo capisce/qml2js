@@ -272,7 +272,7 @@ generateBindings indentLevel obj =
         i2 = indent i2level
         jsForBindings = (mapMaybe (generateJsForBinding (i2level + 1)) bindings)
         core = if not $ null jsForBindings
-               then i2 ++ "applyBindings(" ++ id ++ ", {\n" ++
+               then i2 ++ "with (" ++ id ++ ") applyBindings(" ++ id ++ ", {\n" ++
                   concat (intersperse ",\n" jsForBindings) ++
                   "\n" ++ i2 ++ "});\n"
                else ""

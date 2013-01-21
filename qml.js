@@ -21,21 +21,21 @@ function initQml() {
             var _qml_id_1_ListElement_scope = {};
             addPropertyProxy(_qml_id_1_ListElement_scope, _qml_id_1_ListElement, "name");
             with (_qml_id_1_ListElement_scope) {
-                applyBindings(_qml_id_1_ListElement, {
+                with (_qml_id_1_ListElement) applyBindings(_qml_id_1_ListElement, {
                     name: function() { return "Element A" }
                 });
             }
             var _qml_id_2_ListElement_scope = {};
             addPropertyProxy(_qml_id_2_ListElement_scope, _qml_id_2_ListElement, "name");
             with (_qml_id_2_ListElement_scope) {
-                applyBindings(_qml_id_2_ListElement, {
+                with (_qml_id_2_ListElement) applyBindings(_qml_id_2_ListElement, {
                     name: function() { return "Element B" }
                 });
             }
             var _qml_id_3_ListElement_scope = {};
             addPropertyProxy(_qml_id_3_ListElement_scope, _qml_id_3_ListElement, "name");
             with (_qml_id_3_ListElement_scope) {
-                applyBindings(_qml_id_3_ListElement, {
+                with (_qml_id_3_ListElement) applyBindings(_qml_id_3_ListElement, {
                     name: function() { return "Element C" }
                 });
             }
@@ -48,29 +48,29 @@ function initQml() {
         name: "Label",
         properties: {
             buttonColor: {},
-            text: {}
+            labelText: {}
         },
         constructor: function() {
             var _qml_id_Rectangle = this;
             var _qml_id_1_Text = createInstance(imports, "Text", _qml_id_Rectangle);
             var _qml_id_Rectangle_scope = {};
             addPropertyProxy(_qml_id_Rectangle_scope, _qml_id_Rectangle, "buttonColor");
-            addPropertyProxy(_qml_id_Rectangle_scope, _qml_id_Rectangle, "text");
+            addPropertyProxy(_qml_id_Rectangle_scope, _qml_id_Rectangle, "labelText");
             with (_qml_id_Rectangle_scope) {
-                applyBindings(_qml_id_Rectangle, {
+                with (_qml_id_Rectangle) applyBindings(_qml_id_Rectangle, {
                     buttonColor: function() { return "#37f" },
-                    text: function() { return "" },
+                    labelText: function() { return "" },
                     width: function() { return 80 },
                     height: function() { return 24 },
                     color: function() { return buttonColor },
                     radius: function() { return 8 }
                 });
-                applyBindings(_qml_id_1_Text, {
+                with (_qml_id_1_Text) applyBindings(_qml_id_1_Text, {
                     width: function() { return 200 },
                     height: function() { return 24 },
                     x: function() { return 4 },
                     y: function() { return 4 },
-                    text: function() { return text }
+                    text: function() { return labelText }
                 });
             }
         }
@@ -91,7 +91,7 @@ function initQml() {
     var inner = createInstance(imports, "Rectangle", rect);
     var _qml_id_4_Label = createInstance(imports, "Label", root);
     addProperty(_qml_id_4_Label, "enabled");
-    var _qml_id_4_1_MouseArea = createInstance(imports, "MouseArea", _qml_id_4_Label);
+    var hoverArea = createInstance(imports, "MouseArea", _qml_id_4_Label);
     var fade = createInstance(imports, "NumberAnimation", root);
     var component = createInstance(imports, "Component", root);
     var listModel = createInstance(imports, "SimpleModel", root);
@@ -113,7 +113,7 @@ function initQml() {
     addPropertyProxy(root_scope, root, "frameCounter");
     addPropertyProxy(root_scope, root, "fps");
     with (root_scope) {
-        applyBindings(root, {
+        with (root) applyBindings(root, {
             color: function() { return "olive" },
             width: function() { return 800 },
             height: function() { return 800 },
@@ -124,7 +124,7 @@ function initQml() {
             fps: function() { return 0 },
             onTChanged: function() { return ++frameCounter }
         });
-        applyBindings(_qml_id_1_MouseArea, {
+        with (_qml_id_1_MouseArea) applyBindings(_qml_id_1_MouseArea, {
             width: function() { return 800 },
             height: function() { return 800 },
             onClicked: function() {
@@ -143,24 +143,24 @@ function initQml() {
         var image_scope = {};
         addPropertyProxy(image_scope, image, "enabled");
         with (image_scope) {
-            applyBindings(image, {
+            with (image) applyBindings(image, {
                 x: function() { return 10 },
                 y: function() { return 200 },
                 enabled: function() { return true },
                 source: function() { return enabled ? "tick.png" : "cross.png" }
             });
-            applyBindings(_qml_id_2_1_MouseArea, {
+            with (_qml_id_2_1_MouseArea) applyBindings(_qml_id_2_1_MouseArea, {
                 width: function() { return image.width },
                 height: function() { return image.height },
                 onClicked: function() { return enabled = !enabled }
             });
         }
-        applyBindings(rect, {
+        with (rect) applyBindings(rect, {
             color: function() { return "green" },
             width: function() { return 40 },
             height: function() { return 40 }
         });
-        applyBindings(_qml_id_3_1_NumberAnimation, {
+        with (_qml_id_3_1_NumberAnimation) applyBindings(_qml_id_3_1_NumberAnimation, {
             target: function() { return rect },
             property: function() { return "x" },
             from: function() { return 0 },
@@ -169,7 +169,7 @@ function initQml() {
             running: function() { return true },
             loops: function() { return -1 }
         });
-        applyBindings(inner, {
+        with (inner) applyBindings(inner, {
             color: function() { return "red" },
             width: function() { return foo },
             height: function() { return 20 }
@@ -177,7 +177,7 @@ function initQml() {
         var _qml_id_4_Label_scope = {};
         addPropertyProxy(_qml_id_4_Label_scope, _qml_id_4_Label, "enabled");
         with (_qml_id_4_Label_scope) {
-            applyBindings(_qml_id_4_Label, {
+            with (_qml_id_4_Label) applyBindings(_qml_id_4_Label, {
                 x: function() { return 20 },
                 y: function() { return 100 },
                 width: function() { return 140 },
@@ -185,17 +185,15 @@ function initQml() {
                 color: function() { return buttonColor },
                 radius: function() { return 8 },
                 enabled: function() { return false },
-                text: function() { return enabled ? "QML Rocks!" : "Hello QML2JS" }
+                labelText: function() { return hoverArea.hovered ? "QML Rocks!" : "Hello QML2JS" }
             });
-            applyBindings(_qml_id_4_1_MouseArea, {
+            with (hoverArea) applyBindings(hoverArea, {
                 width: function() { return parent.width },
                 height: function() { return parent.height },
-                onClicked: function() {
-                enabled = !enabled
-            }
+                hoverEnabled: function() { return true }
             });
         }
-        applyBindings(fade, {
+        with (fade) applyBindings(fade, {
             target: function() { return root },
             property: function() { return "opacity" },
             from: function() { return 0 },
@@ -210,13 +208,13 @@ function initQml() {
                 var _qml_id_6_1_Rectangle_scope = {};
                 addPropertyProxy(_qml_id_6_1_Rectangle_scope, _qml_id_6_1_Rectangle, "unused");
                 with (_qml_id_6_1_Rectangle_scope) {
-                    applyBindings(_qml_id_6_1_Rectangle, {
+                    with (_qml_id_6_1_Rectangle) applyBindings(_qml_id_6_1_Rectangle, {
                         width: function() { return 80 / 2 },
                         height: function() { return 24 },
                         color: function() { return buttonColor },
                         radius: function() { return 8 }
                     });
-                    applyBindings(_qml_id_6_1_1_Text, {
+                    with (_qml_id_6_1_1_Text) applyBindings(_qml_id_6_1_1_Text, {
                         x: function() { return 4 },
                         y: function() { return 4 },
                         text: function() { return index }
@@ -225,21 +223,21 @@ function initQml() {
             }
             return _qml_id_6_1_Rectangle;
         }
-        applyBindings(_qml_id_8_Item, {
+        with (_qml_id_8_Item) applyBindings(_qml_id_8_Item, {
             x: function() { return 220 },
             y: function() { return 100 }
         });
-        applyBindings(_qml_id_8_1_Text, {
+        with (_qml_id_8_1_Text) applyBindings(_qml_id_8_1_Text, {
             width: function() { return 400 },
             text: function() { return "Row with ListModel Repeater" }
         });
-        applyBindings(_qml_id_8_2_Row, {
+        with (_qml_id_8_2_Row) applyBindings(_qml_id_8_2_Row, {
             y: function() { return 28 }
         });
         _qml_id_8_2_1_Repeater._instantiateQml = function(parent, scope) {
             var _qml_id_8_2_1_1_Text = createInstance(imports, "Text", parent);
             with (scope) {
-                applyBindings(_qml_id_8_2_1_1_Text, {
+                with (_qml_id_8_2_1_1_Text) applyBindings(_qml_id_8_2_1_1_Text, {
                     width: function() { return 80 },
                     height: function() { return 28 },
                     text: function() { return name }
@@ -247,50 +245,50 @@ function initQml() {
             }
             return _qml_id_8_2_1_1_Text;
         }
-        applyBindings(_qml_id_8_2_1_Repeater, {
+        with (_qml_id_8_2_1_Repeater) applyBindings(_qml_id_8_2_1_Repeater, {
             model: function() { return listModel }
         });
-        applyBindings(_qml_id_9_Item, {
+        with (_qml_id_9_Item) applyBindings(_qml_id_9_Item, {
             x: function() { return 520 },
             y: function() { return 100 }
         });
-        applyBindings(_qml_id_9_1_Text, {
+        with (_qml_id_9_1_Text) applyBindings(_qml_id_9_1_Text, {
             width: function() { return 200 },
             text: function() { return "Nested Row / Column with number Repeaters" }
         });
-        applyBindings(_qml_id_9_2_Row, {
+        with (_qml_id_9_2_Row) applyBindings(_qml_id_9_2_Row, {
             y: function() { return 20 }
         });
         _qml_id_9_2_1_Repeater._instantiateQml = function(parent, scope) {
             var _qml_id_9_2_1_1_Column = createInstance(imports, "Column", parent);
             var _qml_id_9_2_1_1_1_Repeater = createInstance(imports, "Repeater", _qml_id_9_2_1_1_Column);
             with (scope) {
-                applyBindings(_qml_id_9_2_1_1_Column, {
+                with (_qml_id_9_2_1_1_Column) applyBindings(_qml_id_9_2_1_1_Column, {
                     y: function() { return 28 },
                     spacing: function() { return 2 }
                 });
-                applyBindings(_qml_id_9_2_1_1_1_Repeater, {
+                with (_qml_id_9_2_1_1_1_Repeater) applyBindings(_qml_id_9_2_1_1_1_Repeater, {
                     model: function() { return 8 },
                     delegate: function() { return component }
                 });
             }
             return _qml_id_9_2_1_1_Column;
         }
-        applyBindings(_qml_id_9_2_1_Repeater, {
+        with (_qml_id_9_2_1_Repeater) applyBindings(_qml_id_9_2_1_Repeater, {
             model: function() { return 2 }
         });
-        applyBindings(_qml_id_10_NumberAnimation, {
+        with (_qml_id_10_NumberAnimation) applyBindings(_qml_id_10_NumberAnimation, {
             target: function() { return root },
             property: function() { return "t" },
             loops: function() { return -1 },
             running: function() { return true }
         });
-        applyBindings(_qml_id_11_Text, {
+        with (_qml_id_11_Text) applyBindings(_qml_id_11_Text, {
             x: function() { return 4 },
             y: function() { return 400 },
             text: function() { return root.fps + " fps" }
         });
-        applyBindings(_qml_id_12_Timer, {
+        with (_qml_id_12_Timer) applyBindings(_qml_id_12_Timer, {
             onTriggered: function() {
             fps = frameCounter * 0.5
             frameCounter = 0;

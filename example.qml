@@ -74,15 +74,13 @@ Rectangle {
         radius: 8
 
         property var enabled: false
-        text: enabled ? "QML Rocks!" : "Hello QML2JS"
+        labelText: hoverArea.hovered ? "QML Rocks!" : "Hello QML2JS"
 
         MouseArea {
+            id: hoverArea
             width: parent.width
             height: parent.height
-
-            onClicked: {
-                enabled = !enabled
-            }
+            hoverEnabled: true
         }
     }
 

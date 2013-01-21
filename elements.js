@@ -228,11 +228,29 @@ addElement(basicelements, { parent: element, name: "ListElement" });
             }
         });
 
+    var enableHover = function(v)
+    {
+        if (!v)
+            return;
+
+        var that = this;
+
+        var hovered = function() { that.hovered = true; }
+        var unhovered = function() { that.hovered = false; }
+
+        console.log("Enabling hover");
+
+        this.priv.element.addEventListener("mouseover", hovered, false);
+        this.priv.element.addEventListener("mouseout", unhovered, false);
+    }
+
     addElement(basicelements,
         {
             parent: item,
             name: "MouseArea",
             properties: {
+                hovered: { value: false },
+                hoverEnabled: { value: false, handler: enableHover }
             },
             constructor: function() {
                 var that = this;

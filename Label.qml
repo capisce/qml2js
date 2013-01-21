@@ -1,5 +1,5 @@
 Rectangle {
-    property var buttonColor: "#37f"
+    property var buttonColor: "#59d"
     property var labelText: ""
     width: 80
     height: 24

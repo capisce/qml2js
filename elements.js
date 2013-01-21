@@ -56,20 +56,34 @@ addElement(basicelements, { parent: element, name: "ListElement" });
 
     var styleSetterPixelDimension = function(key) { return styleSetter(key, "px"); }
 
+    function setTransformProperties(obj, val)
+    {
+        obj.transform = val;
+        obj.OTransform = val;
+        obj.msTransform = val;
+        obj.MozTransform = val;
+        obj.WebkitTransform = val;
+    }
+
+    function setTransitionProperties(obj, val)
+    {
+        obj.transition = val;
+        obj.OTransition = val;
+        obj.msTransition = val;
+        obj.MozTransition = val;
+        obj.WebkitTransition = val;
+    }
+
     var updatePosition =
         function() {
             var dx = this.x + "px";
             var dy = this.y + "px";
 
-            var style = this.priv.element.style;
+            var style = this.priv.privateElement.style;
 
             var translation = "translate3d(" + dx + "," + dy + ",0)";
 
-            style.transform = translation;
-            style.OTransform = translation;
-            style.msTransform = translation;
-            style.MozTransform = translation;
-            style.WebkitTransform = translation;
+            setTransformProperties(style, translation)
         }
 
     var item = addElement(basicelements,
@@ -77,19 +91,24 @@ addElement(basicelements, { parent: element, name: "ListElement" });
             parent: element,
             name: "Item", 
             constructor: function(parent) {
+                var privateElement = this.priv.privateElement = document.createElement('div');
                 var element = this.priv.element = document.createElement('div');
+
                 var root = parent ? parent.priv.element : document.getElementById("qmlroot");
 
                 element.style.position = "absolute";
 
-                root.appendChild(element);
+                root.appendChild(privateElement);
+                privateElement.appendChild(element);
             },
             properties: {
                 x: { value: 0, handler: updatePosition },
                 y: { value: 0, handler: updatePosition },
                 width: { value: 100, handler: styleSetterPixelDimension("width") },
                 height: { value: 100, handler: styleSetterPixelDimension("height") },
-                opacity: { value: 1, handler: styleSetter("opacity") }
+                opacity: { value: 1, handler: styleSetter("opacity") },
+                transform: { value: "", handler: function(v) { setTransformProperties(this.priv.element.style, v); } },
+                transition: { value: "", handler: function(v) { setTransitionProperties(this.priv.element.style, v); } }
             }
         });
 
@@ -141,6 +160,7 @@ addElement(basicelements, { parent: element, name: "ListElement" });
         });
 
     var addLayouter = function (name, position, size) {
+        var otherSize = size == "width" ? "height" : "width";
         var relayout =
             function()
             {
@@ -150,10 +170,14 @@ addElement(basicelements, { parent: element, name: "ListElement" });
                     var child = children[i];
                     if (child.metaElement.description.name === "Repeater")
                         continue;
+                    var maxOther = 0;
                     if (child.height) {
                         child[position] = p;
                         p += child[size] + this.spacing;
+                        maxOther = Math.max(maxOther, child[otherSize]);
                     }
+                    this[size] = p - this.spacing;
+                    this[otherSize] = maxOther;
                 }
             }
 
@@ -177,6 +201,7 @@ addElement(basicelements, { parent: element, name: "ListElement" });
                     if (child[size] > 0)
                         this.priv.relayout();
                     addListener(child, size, this.priv.relayout);
+                    addListener(child, otherSize, this.priv.relayout);
                 }
             });
     };
@@ -186,6 +211,9 @@ addElement(basicelements, { parent: element, name: "ListElement" });
 
     var imageSetter = function(v)
     {
+        if (!v)
+            return;
+
         if (this.priv.image) {
             this.priv.element.removeChild(this.priv.image);
             delete this.priv.image;
@@ -195,7 +223,31 @@ addElement(basicelements, { parent: element, name: "ListElement" });
         this.priv.element.appendChild(this.priv.image);
 
         this.priv.image.setAttribute("src", v);
-        console.log("set image source: " + v);
+
+        var callback = makeImageDimensionSetter(this);
+
+        this.priv.image.style.borderRadius = this.radius + "px"
+
+        imageDimensionSetter.call(this);
+
+        if (!this.priv.registeredImageCallbacks) {
+            this.priv.registeredImageCallbacks = true;
+            addListener(this, "width", callback);
+            addListener(this, "height", callback);
+        }
+    }
+
+    var imageDimensionSetter = function()
+    {
+        if (this.priv.image) {
+            this.priv.image.setAttribute("width", this.width + "px");
+            this.priv.image.setAttribute("height", this.height + "px");
+        }
+    }
+
+    var makeImageDimensionSetter = function(that)
+    {
+        imageDimensionSetter.call(that);
     }
 
     addElement(basicelements,
@@ -204,6 +256,7 @@ addElement(basicelements, { parent: element, name: "ListElement" });
             name: "Image",
             properties: {
                 source: { value: "", handler: imageSetter },
+                radius: { value: 0, handler: function(v) { if (this.priv.image) { this.priv.image.style.borderRadius = v + "px"; } } }
             },
             constructor: function() {
                 this.priv.image = null;
@@ -216,9 +269,13 @@ addElement(basicelements, { parent: element, name: "ListElement" });
             name: "Rectangle", 
             properties: {
                 color: { value: "white", handler: styleSetter("backgroundColor") },
-                radius: { value: 0, handler: styleSetterPixelDimension("borderRadius") }
+                radius: { value: 0, handler: styleSetterPixelDimension("borderRadius") },
+                borderWidth: { value: 0, handler: styleSetterPixelDimension("borderWidth") },
+                borderStyle: { value: 0, handler: styleSetter("borderStyle") },
+                borderColor: { value: 0, handler: styleSetter("borderColor") }
             },
-            constructor: function() {}
+            constructor: function() {
+            }
         });
 
     var textSetter = function(v)
@@ -240,6 +297,8 @@ addElement(basicelements, { parent: element, name: "ListElement" });
             },
             constructor: function() {
                 this.priv.textNode = null;
+                this.width = 200
+                this.height = 24
             }
         });
 
@@ -252,8 +311,6 @@ addElement(basicelements, { parent: element, name: "ListElement" });
 
         var hovered = function() { that.hovered = true; }
         var unhovered = function() { that.hovered = false; }
-
-        console.log("Enabling hover");
 
         this.priv.element.addEventListener("mouseover", hovered, false);
         this.priv.element.addEventListener("mouseout", unhovered, false);
@@ -269,7 +326,7 @@ addElement(basicelements, { parent: element, name: "ListElement" });
             },
             constructor: function() {
                 var that = this;
-                this.priv.element.addEventListener("click", function(e) { that.onClicked();  }, false);
+                this.priv.element.addEventListener("click", function(e) { if (that.onClicked) that.onClicked();  }, false);
             }
         });
 })();

@@ -116,8 +116,9 @@ function addElement(collection, elementDescription)
                 if (typeof value === "function") {
                     if (this.hasOwnProperty(binding)) {
                         propertyController.test = true;
-                        this[binding] = value();
+                        var result = value();
                         propertyController.test = false;
+                        this[binding] = result;
                         propertyController.createSourceBinding(this, binding, value);
                     } else {
                         this[binding] = value;

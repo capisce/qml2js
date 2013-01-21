@@ -56,18 +56,21 @@ addElement(basicelements, { parent: element, name: "ListElement" });
 
     var styleSetterPixelDimension = function(key) { return styleSetter(key, "px"); }
 
-    /*
     var updatePosition =
         function() {
-            var translation = "translate3d(" + this.x + "px," + this.y + "px, 0)";
+            var dx = this.x + "px";
+            var dy = this.y + "px";
+
             var style = this.priv.element.style;
+
+            var translation = "translate3d(" + dx + "," + dy + ",0)";
+
             style.transform = translation;
             style.OTransform = translation;
             style.msTransform = translation;
             style.MozTransform = translation;
             style.WebkitTransform = translation;
         }
-    */
 
     var item = addElement(basicelements,
         {
@@ -82,8 +85,8 @@ addElement(basicelements, { parent: element, name: "ListElement" });
                 root.appendChild(element);
             },
             properties: {
-                x: { value: 0, handler: styleSetterPixelDimension("left") },
-                y: { value: 0, handler: styleSetterPixelDimension("top") },
+                x: { value: 0, handler: updatePosition },
+                y: { value: 0, handler: updatePosition },
                 width: { value: 100, handler: styleSetterPixelDimension("width") },
                 height: { value: 100, handler: styleSetterPixelDimension("height") },
                 opacity: { value: 1, handler: styleSetter("opacity") }
@@ -183,7 +186,16 @@ addElement(basicelements, { parent: element, name: "ListElement" });
 
     var imageSetter = function(v)
     {
+        if (this.priv.image) {
+            this.priv.element.removeChild(this.priv.image);
+            delete this.priv.image;
+        }
+
+        this.priv.image = document.createElement('img');
+        this.priv.element.appendChild(this.priv.image);
+
         this.priv.image.setAttribute("src", v);
+        console.log("set image source: " + v);
     }
 
     addElement(basicelements,
@@ -194,8 +206,7 @@ addElement(basicelements, { parent: element, name: "ListElement" });
                 source: { value: "", handler: imageSetter },
             },
             constructor: function() {
-                var element = this.priv.image = document.createElement('img');
-                this.priv.element.appendChild(element);
+                this.priv.image = null;
             }
         });
 

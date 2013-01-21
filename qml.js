@@ -83,9 +83,10 @@ function initQml() {
     addProperty(root, "frameCounter");
     addProperty(root, "fps");
     var _qml_id_1_MouseArea = createInstance(imports, "MouseArea", root);
-    var image = createInstance(imports, "Image", root);
-    addProperty(image, "enabled");
-    var _qml_id_2_1_MouseArea = createInstance(imports, "MouseArea", image);
+    var _qml_id_2_Item = createInstance(imports, "Item", root);
+    addProperty(_qml_id_2_Item, "enabled");
+    var _qml_id_2_1_Image = createInstance(imports, "Image", _qml_id_2_Item);
+    var _qml_id_2_2_MouseArea = createInstance(imports, "MouseArea", _qml_id_2_Item);
     var rect = createInstance(imports, "Rectangle", root);
     var _qml_id_3_1_NumberAnimation = createInstance(imports, "NumberAnimation", rect);
     var inner = createInstance(imports, "Rectangle", rect);
@@ -140,18 +141,22 @@ function initQml() {
             fade.running = true;
         }
         });
-        var image_scope = {};
-        addPropertyProxy(image_scope, image, "enabled");
-        with (image_scope) {
-            with (image) applyBindings(image, {
+        var _qml_id_2_Item_scope = {};
+        addPropertyProxy(_qml_id_2_Item_scope, _qml_id_2_Item, "enabled");
+        with (_qml_id_2_Item_scope) {
+            with (_qml_id_2_Item) applyBindings(_qml_id_2_Item, {
                 x: function() { return 10 },
                 y: function() { return 200 },
-                enabled: function() { return true },
+                width: function() { return 64 },
+                height: function() { return 64 },
+                enabled: function() { return true }
+            });
+            with (_qml_id_2_1_Image) applyBindings(_qml_id_2_1_Image, {
                 source: function() { return enabled ? "tick.png" : "cross.png" }
             });
-            with (_qml_id_2_1_MouseArea) applyBindings(_qml_id_2_1_MouseArea, {
-                width: function() { return image.width },
-                height: function() { return image.height },
+            with (_qml_id_2_2_MouseArea) applyBindings(_qml_id_2_2_MouseArea, {
+                width: function() { return parent.width },
+                height: function() { return parent.height },
                 onClicked: function() { return enabled = !enabled }
             });
         }

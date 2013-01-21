@@ -26,16 +26,21 @@ Rectangle {
         }
     }
 
-    Image {
-        id: image
+    Item {
         x: 10
         y: 200
+        width: 64
+        height: 64
+
         property var enabled: true
-        source: enabled ? "tick.png" : "cross.png"
+
+        Image {
+            source: enabled ? "tick.png" : "cross.png"
+        }
 
         MouseArea {
-            width: image.width
-            height: image.height
+            width: parent.width
+            height: parent.height
             onClicked: enabled = !enabled
         }
     }

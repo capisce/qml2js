@@ -113,11 +113,23 @@ function addElement(collection, elementDescription)
         {
             for (binding in bindings) {
                 var value = bindings[binding];
-                if (typeof value === "function" && this.hasOwnProperty(binding)) {
-                    propertyController.test = true;
-                    this[binding] = value();
-                    propertyController.test = false;
-                    propertyController.createSourceBinding(this, binding, value);
+                if (typeof value === "function") {
+                    if (this.hasOwnProperty(binding)) {
+                        propertyController.test = true;
+                        this[binding] = value();
+                        propertyController.test = false;
+                        propertyController.createSourceBinding(this, binding, value);
+                    } else {
+                        this[binding] = value;
+                        if (binding.indexOf("on") === 0 && binding.slice(-7) == "Changed") {
+                            var property = binding.substr(2, 1).toLowerCase() + binding.substr(3, binding.length - 10);
+                            if (this.hasOwnProperty(property)) {
+                                addListener(this, property, function(v) { value.call(this, v) });
+                            } else {
+                                console.log("Error (" + binding + "): " + this.metaElement.description.name + " does not have property " + property);
+                            }
+                        }
+                    }
                 } else {
                     this[binding] = value;
                 }

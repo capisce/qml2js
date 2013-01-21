@@ -79,6 +79,9 @@ function initQml() {
     var root = createInstance(imports, "Rectangle");
     addProperty(root, "foo");
     addProperty(root, "buttonColor");
+    addProperty(root, "t");
+    addProperty(root, "frameCounter");
+    addProperty(root, "fps");
     var _qml_id_1_MouseArea = createInstance(imports, "MouseArea", root);
     var image = createInstance(imports, "Image", root);
     addProperty(image, "enabled");
@@ -100,16 +103,26 @@ function initQml() {
     var _qml_id_9_1_Text = createInstance(imports, "Text", _qml_id_9_Item);
     var _qml_id_9_2_Row = createInstance(imports, "Row", _qml_id_9_Item);
     var _qml_id_9_2_1_Repeater = createInstance(imports, "Repeater", _qml_id_9_2_Row);
+    var _qml_id_10_NumberAnimation = createInstance(imports, "NumberAnimation", root);
+    var _qml_id_11_Text = createInstance(imports, "Text", root);
+    var _qml_id_12_Timer = createInstance(imports, "Timer", root);
     var root_scope = {};
     addPropertyProxy(root_scope, root, "foo");
     addPropertyProxy(root_scope, root, "buttonColor");
+    addPropertyProxy(root_scope, root, "t");
+    addPropertyProxy(root_scope, root, "frameCounter");
+    addPropertyProxy(root_scope, root, "fps");
     with (root_scope) {
         applyBindings(root, {
             color: function() { return "olive" },
             width: function() { return 800 },
             height: function() { return 800 },
             foo: function() { return 20 },
-            buttonColor: function() { return "#37f" }
+            buttonColor: function() { return "#37f" },
+            t: function() { return 0 },
+            frameCounter: function() { return 0 },
+            fps: function() { return 0 },
+            onTChanged: function() { return ++frameCounter }
         });
         applyBindings(_qml_id_1_MouseArea, {
             width: function() { return 800 },
@@ -265,6 +278,26 @@ function initQml() {
         }
         applyBindings(_qml_id_9_2_1_Repeater, {
             model: function() { return 2 }
+        });
+        applyBindings(_qml_id_10_NumberAnimation, {
+            target: function() { return root },
+            property: function() { return "t" },
+            loops: function() { return -1 },
+            running: function() { return true }
+        });
+        applyBindings(_qml_id_11_Text, {
+            x: function() { return 4 },
+            y: function() { return 400 },
+            text: function() { return root.fps + " fps" }
+        });
+        applyBindings(_qml_id_12_Timer, {
+            onTriggered: function() {
+            fps = frameCounter * 0.5
+            frameCounter = 0;
+        },
+            interval: function() { return 2000 },
+            repeat: function() { return true },
+            running: function() { return true }
         });
     }
 }

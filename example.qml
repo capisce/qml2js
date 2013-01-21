@@ -155,4 +155,32 @@ Rectangle {
             }
         }
     }
+
+    property var t: 0
+    NumberAnimation on t {
+        loops: -1
+        running: true
+    }
+
+    property var frameCounter: 0
+    property var fps: 0
+
+    onTChanged: ++frameCounter
+
+    Text {
+        x: 4
+        y: 400
+        text: root.fps + " fps"
+    }
+
+    Timer {
+        onTriggered: {
+            fps = frameCounter * 0.5
+            frameCounter = 0;
+        }
+
+        interval: 2000
+        repeat: true
+        running: true
+    }
 }

@@ -180,7 +180,6 @@ addElement(basicelements, { parent: element, name: "ListElement" });
     var imageSetter = function(v)
     {
         this.priv.image.setAttribute("src", v);
-        console.log("setting image source: " + v)
     }
 
     addElement(basicelements,
@@ -326,9 +325,7 @@ addElement(basicelements,
             property: {},
             duration: { value: 1000 },
             from: { value: 0 },
-            to: { value: 1, handler: function(v) {
-                console.log("to set to " + v); }
-            },
+            to: { value: 1 },
             loops: { value: 1 },
             running: { value: false, handler: function(v) { if (v) { startAnimation(createAnimation.call(this)) } } }
         }
@@ -341,6 +338,33 @@ addElement(basicelements,
         properties: {
             target: {},
             property: {}
+        }
+    });
+
+function timerFunction(timer)
+{
+    function f()
+    {
+        if (!timer.running)
+            return;
+
+        timer.onTriggered();
+
+        if (timer.repeat)
+            setTimeout(f, timer.interval);
+    }
+
+    return f;
+}
+
+addElement(basicelements,
+    {
+        parent: element,
+        name: "Timer",
+        properties: {
+            interval: { value: 1000 },
+            repeat: { value: false },
+            running: { value: false, handler: function(v) { if (v) { setTimeout(timerFunction(this), this.interval); } } }
         }
     });
 

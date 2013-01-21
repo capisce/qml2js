@@ -74,6 +74,13 @@ addElement(basicelements, { parent: element, name: "ListElement" });
         obj.WebkitTransition = val;
     }
 
+    function setDimensionProperty(obj, property, val)
+    {
+        var suffixed = val + "px";
+        obj.priv.element.style[property] = suffixed;
+        obj.priv.privateElement.style[property] = suffixed;
+    }
+
     var updatePosition =
         function() {
             var dx = this.x + "px";
@@ -83,7 +90,7 @@ addElement(basicelements, { parent: element, name: "ListElement" });
 
             var translation = "translate3d(" + dx + "," + dy + ",0)";
 
-            setTransformProperties(style, translation)
+            setTransformProperties(style, translation);
         }
 
     var item = addElement(basicelements,
@@ -97,6 +104,7 @@ addElement(basicelements, { parent: element, name: "ListElement" });
                 var root = parent ? parent.priv.element : document.getElementById("qmlroot");
 
                 element.style.position = "absolute";
+                privateElement.style.position = "absolute";
 
                 root.appendChild(privateElement);
                 privateElement.appendChild(element);
@@ -104,8 +112,8 @@ addElement(basicelements, { parent: element, name: "ListElement" });
             properties: {
                 x: { value: 0, handler: updatePosition },
                 y: { value: 0, handler: updatePosition },
-                width: { value: 100, handler: styleSetterPixelDimension("width") },
-                height: { value: 100, handler: styleSetterPixelDimension("height") },
+                width: { value: 100, handler: function (v) { setDimensionProperty(this, "width", v); } },
+                height: { value: 100, handler: function (v) { setDimensionProperty(this, "height", v); } },
                 opacity: { value: 1, handler: styleSetter("opacity") },
                 transform: { value: "", handler: function(v) { setTransformProperties(this.priv.element.style, v); } },
                 transition: { value: "", handler: function(v) { setTransitionProperties(this.priv.element.style, v); } }

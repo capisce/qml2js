@@ -122,24 +122,26 @@ parseQmlValue = parseObject
     <|> try parsePropertyDeclaration
     <|> parseBinding
 
-commentSection :: Parser String
-commentSection = do
-    many space
-    string "/*"
-    manyTill (anyChar <|> space) (string "*/")
-    many space
+parseQmlFile :: Parser QmlParseValue
+parseQmlFile = many space >> parseQmlValue
 
-codeAroundComments :: Parser String
-codeAroundComments = do
-    first <- many (noneOf "/")
-    many (try commentSection)
-    next <- anyChar
-    second <- many (noneOf "/")
-    return $ first ++ (next : second)
+commentStart :: Parser String
+commentStart = do
+    string "/*"
+
+commentBody :: Parser String
+commentBody = do
+    manyTill (anyChar <|> space) (try (string "*/"))
+
+commentSection :: Parser String
+commentSection = commentStart >> commentBody
+
+code = try (manyTill anyChar (try (string "/*"))) <|> many anyChar
 
 removeComments :: Parser String
 removeComments = do
-    parts <- many codeAroundComments
+    optional (many commentSection)
+    parts <- sepEndBy code commentBody
     return $ concat parts
 
 instance Show QmlParseValue where
@@ -152,9 +154,6 @@ parseExpr :: (Parser a) -> String -> String -> (a -> b) -> b
 parseExpr parser identifier input process = case parse parser identifier input of
     Left err -> error ("Parse error: " ++ show err)
     Right val -> process val
-
-check str = putStrLn str >> putStrLn (parseExpr parseQmlValue "qml" str show)
-checkWithParser parser str = putStrLn (parseExpr parser "unknown" str show)
 
 data QmlObject =
     QmlObject {
@@ -292,12 +291,16 @@ processFile file = do
     putStrLn x
     let commentsStripped = parseExpr removeComments "qml" x
     commentsStripped (putStrLn . (((++) "comments stripped: ")))
-    let y = parseExpr parseQmlValue "qml" (commentsStripped id)
+    let y = parseExpr parseQmlFile "qml" (commentsStripped id)
     y (putStrLn . show)
     let code = y (generateJs . (getObject "" "_qml_id"))
     putStrLn code
-    writeFile "qml.js" code
+    return $ code
+
+processFiles files = do
+    code <- mapM processFile files
+    writeFile "qml.js" (concat code)
 
 main = do
     args <- getArgs
-    processFile $ head args
+    processFiles args

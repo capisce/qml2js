@@ -30,8 +30,8 @@ function initQml() {
     var _qml_id_8_2_1_Repeater = createInstance(imports, "Repeater", _qml_id_8_2_Row);
     var _qml_id_9_Item = createInstance(imports, "Item", root);
     var _qml_id_9_1_Text = createInstance(imports, "Text", _qml_id_9_Item);
-    var _qml_id_9_2_Column = createInstance(imports, "Column", _qml_id_9_Item);
-    var _qml_id_9_2_1_Repeater = createInstance(imports, "Repeater", _qml_id_9_2_Column);
+    var _qml_id_9_2_Row = createInstance(imports, "Row", _qml_id_9_Item);
+    var _qml_id_9_2_1_Repeater = createInstance(imports, "Repeater", _qml_id_9_2_Row);
     var root_scope = {};
     addPropertyProxy(root_scope, root, "foo");
     addPropertyProxy(root_scope, root, "buttonColor");
@@ -200,16 +200,29 @@ function initQml() {
             y: function() { return 100 }
         });
         applyBindings(_qml_id_9_1_Text, {
-            width: function() { return 400 },
-            text: function() { return "Column with number Repeater" }
+            width: function() { return 200 },
+            text: function() { return "Nested Row / Column with number Repeaters" }
         });
-        applyBindings(_qml_id_9_2_Column, {
-            y: function() { return 28 },
-            spacing: function() { return 2 }
+        applyBindings(_qml_id_9_2_Row, {
+            y: function() { return 20 }
         });
+        _qml_id_9_2_1_Repeater._instantiateQml = function(parent, scope) {
+            var _qml_id_9_2_1_1_Column = createInstance(imports, "Column", parent);
+            var _qml_id_9_2_1_1_1_Repeater = createInstance(imports, "Repeater", _qml_id_9_2_1_1_Column);
+            with (scope) {
+                applyBindings(_qml_id_9_2_1_1_Column, {
+                    y: function() { return 28 },
+                    spacing: function() { return 2 }
+                });
+                applyBindings(_qml_id_9_2_1_1_1_Repeater, {
+                    model: function() { return 8 },
+                    delegate: function() { return component }
+                });
+            }
+            return _qml_id_9_2_1_1_Column;
+        }
         applyBindings(_qml_id_9_2_1_Repeater, {
-            model: function() { return 8 },
-            delegate: function() { return component }
+            model: function() { return 2 }
         });
     }
 }

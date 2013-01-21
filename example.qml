@@ -148,15 +148,20 @@ Rectangle {
     Item {
         x: 520
         y: 100
+        Text { width: 200 ; text: "Nested Row / Column with number Repeaters" }
 
-        Text { width: 400 ; text: "Column with number Repeater" }
-
-        Column {
-            y: 28
-            spacing: 2
+        Row {
+            y: 20
             Repeater {
-                model: 8
-                delegate: component
+                model: 2
+                Column {
+                    y: 28
+                    spacing: 2
+                    Repeater {
+                        model: 8
+                        delegate: component
+                    }
+                }
             }
         }
     }

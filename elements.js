@@ -26,7 +26,11 @@ var element = addElement(basicelements,
     {
         name: "Element",
         constructor: function(parent) {
-            this.priv = { parent: parent, children: [] }
+            this.parent = parent;
+            this.priv = { children: [] }
+        },
+        properties: {
+            parent: {}
         },
         childAdded: function(child) {
             if (!child)
@@ -98,7 +102,7 @@ addElement(basicelements, { parent: element, name: "ListElement" });
 
             if (typeof this.model === "number") {
                 for (var i = 0; i < this.model; ++i) {
-                    delegate._instantiateQml(this.priv.parent, { index: i });
+                    delegate._instantiateQml(this.parent, { index: i });
                 }
             } else {
                 var children = this.model.priv.children;
@@ -110,11 +114,11 @@ addElement(basicelements, { parent: element, name: "ListElement" });
                     var props = Object.getOwnPropertyNames(item);
                     for (var j = 0, len = props.length; j < len; ++j) {
                         var property = props[j];
-                        if (property === "priv" || property === "metaElement" || property === "metaObject")
+                        if (property === "priv" || property === "metaElement" || property === "metaObject" || property == "parent")
                             continue;
                         addPropertyProxy(scope, item, property);
                     }
-                    delegate._instantiateQml(this.priv.parent, scope);
+                    delegate._instantiateQml(this.parent, scope);
                 }
             }
         }

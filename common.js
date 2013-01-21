@@ -26,6 +26,7 @@ var forEach = function(array, func)
         func(array[i]);
     }
 }
+
 basicelements = {}
 
 function addElement(collection, elementDescription)
@@ -76,7 +77,7 @@ function addElement(collection, elementDescription)
         constructor: function (parent)
         {
             if (elementDescription.hasOwnProperty("parent")) {
-                collection[elementDescription.parent].constructor.call(this, parent);
+                elementDescription.parent.constructor.call(this, parent);
             } else {
                 this.metaObject = { propertyNotifiers: {} };
             }
@@ -105,7 +106,7 @@ function addElement(collection, elementDescription)
         childAdded: function (child)
         {
             if (elementDescription.hasOwnProperty("parent"))
-                collection[elementDescription.parent].childAdded.call(this, child);
+                elementDescription.parent.childAdded.call(this, child);
 
             if (elementDescription.hasOwnProperty("childAdded"))
                 elementDescription.childAdded.call(this, child);
@@ -138,9 +139,11 @@ function addElement(collection, elementDescription)
     };
 
     collection[elementDescription.name] = element;
+
+    return element;
 }
 
-addElement(basicelements,
+var element = addElement(basicelements,
     {
         name: "Element",
         constructor: function(parent) {
@@ -153,9 +156,9 @@ addElement(basicelements,
         }
     });
 
-addElement(basicelements, { parent: "Element", name: "Component" });
-addElement(basicelements, { parent: "Element", name: "ListModel" });
-addElement(basicelements, { parent: "Element", name: "ListElement" });
+addElement(basicelements, { parent: element, name: "Component" });
+addElement(basicelements, { parent: element, name: "ListModel" });
+addElement(basicelements, { parent: element, name: "ListElement" });
 
 (function() {
     var styleSetter = function(key, suffix) {
@@ -170,9 +173,22 @@ addElement(basicelements, { parent: "Element", name: "ListElement" });
 
     var styleSetterPixelDimension = function(key) { return styleSetter(key, "px"); }
 
-    addElement(basicelements,
+    /*
+    var updatePosition =
+        function() {
+            var translation = "translate3d(" + this.x + "px," + this.y + "px, 0)";
+            var style = this.priv.element.style;
+            style.transform = translation;
+            style.OTransform = translation;
+            style.msTransform = translation;
+            style.MozTransform = translation;
+            style.WebkitTransform = translation;
+        }
+    */
+
+    var item = addElement(basicelements,
         {
-            parent: "Element",
+            parent: element,
             name: "Item", 
             constructor: function(parent) {
                 var element = this.priv.element = document.createElement('div');
@@ -226,7 +242,7 @@ addElement(basicelements, { parent: "Element", name: "ListElement" });
 
     addElement(basicelements,
         {
-            parent: "Element",
+            parent: element,
             name: "Repeater",
             constructor: function(parent) {
                 this.priv.repeaterChildren = []
@@ -257,7 +273,7 @@ addElement(basicelements, { parent: "Element", name: "ListElement" });
 
         addElement(basicelements,
             {
-                parent: "Item",
+                parent: item,
                 name: name,
                 properties: {
                     spacing: { value: 0, handler: relayout }
@@ -285,11 +301,12 @@ addElement(basicelements, { parent: "Element", name: "ListElement" });
     var imageSetter = function(v)
     {
         this.priv.image.setAttribute("src", v);
+        console.log("setting image source: " + v)
     }
 
     addElement(basicelements,
         {
-            parent: "Item",
+            parent: item,
             name: "Image",
             properties: {
                 source: { value: "", handler: imageSetter },
@@ -302,7 +319,7 @@ addElement(basicelements, { parent: "Element", name: "ListElement" });
 
     addElement(basicelements,
         {
-            parent: "Item",
+            parent: item,
             name: "Rectangle", 
             properties: {
                 color: { value: "white", handler: styleSetter("backgroundColor") },
@@ -323,7 +340,7 @@ addElement(basicelements, { parent: "Element", name: "ListElement" });
 
     addElement(basicelements,
         {
-            parent: "Item",
+            parent: item,
             name: "Text",
             properties: {
                 text: { value: "", handler: textSetter }
@@ -332,19 +349,19 @@ addElement(basicelements, { parent: "Element", name: "ListElement" });
                 this.priv.textNode = null;
             }
         });
-})();
 
-addElement(basicelements,
-    {
-        parent: "Item",
-        name: "MouseArea",
-        properties: {
-        },
-        constructor: function() {
-            var that = this;
-            this.priv.element.addEventListener("click", function(e) { that.onClicked();  }, false);
-        }
-    });
+    addElement(basicelements,
+        {
+            parent: item,
+            name: "MouseArea",
+            properties: {
+            },
+            constructor: function() {
+                var that = this;
+                this.priv.element.addEventListener("click", function(e) { that.onClicked();  }, false);
+            }
+        });
+})();
 
 var animations = [];
 var animationsRunning = false;
@@ -423,7 +440,7 @@ function createAnimation()
 
 addElement(basicelements,
     {
-        parent: "Element",
+        parent: element,
         name: "NumberAnimation", 
         properties: {
             target: {},
@@ -440,7 +457,7 @@ addElement(basicelements,
 
 addElement(basicelements,
     {
-        parent: "Element",
+        parent: element,
         name: "Behavior", 
         properties: {
             target: {},
@@ -456,17 +473,26 @@ function makeSetter(value, desc)
     }
 }
 
-function createInstance(scope, elementName, parent)
+function lookupElement(imports, name)
 {
-    var object = null;
-    for (var i = 0, len = scope.length; i < len; ++i) {
-        if (scope[i].hasOwnProperty(elementName)) {
-            object = new scope[i][elementName].constructor(parent);
-            break;
+    for (var i = 0, len = imports.length; i < len; ++i) {
+        if (imports[i].hasOwnProperty(name)) {
+            return imports[i][name];
         }
     }
+}
 
-    if (object && parent) {
+function createInstance(imports, elementName, parent)
+{
+    var element = lookupElement(imports, elementName);
+    if (!element) {
+        console.log("Failed to instantiate element " + elementName);
+        return null;
+    }
+
+    var object = new element.constructor(parent);
+
+    if (parent) {
         parent.metaElement.childAdded.call(parent, object);
     }
 

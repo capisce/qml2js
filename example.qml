@@ -66,7 +66,7 @@ Rectangle {
 
     property var buttonColor: "#37f"
 
-    Rectangle {
+    Label {
         x: 20 ; y: 100
         width: 140
         height: 24
@@ -74,13 +74,7 @@ Rectangle {
         radius: 8
 
         property var enabled: false
-
-        Text {
-            width: 400
-            x: 4
-            y: 4
-            text: enabled ? "QML Rocks!" : "Hello QML2JS"
-        }
+        text: enabled ? "QML Rocks!" : "Hello QML2JS"
 
         MouseArea {
             width: parent.width
@@ -97,19 +91,6 @@ Rectangle {
         from: 0
         to: 1
         running: false
-    }
-
-    ListModel {
-        id: listModel
-        ListElement {
-            name: "Element A"
-        }
-        ListElement {
-            name: "Element B"
-        }
-        ListElement {
-            name: "Element C"
-        }
     }
 
     Component {
@@ -133,6 +114,8 @@ Rectangle {
 
     /* list model repeater */
 
+    SimpleModel { id: listModel }
+
     Item {
         x: 220
         y: 100
@@ -149,7 +132,7 @@ Rectangle {
     }
 
     /*
-       nested repeaters
+     * nested repeaters
      */
 
     Item {

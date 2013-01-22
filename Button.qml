@@ -11,5 +11,6 @@ MouseArea {
         width: parent.width
         height: parent.height
         labelText: buttonText
+        selectable: false
     }
 }

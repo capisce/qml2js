@@ -130,16 +130,18 @@ addElement(basicelements, { parent: element, name: "ListElement" });
             if (!this.model || !delegate)
                 return;
 
+            var parentChildren = this.parent.priv.children;
+            var repeaterIndex = parentChildren.indexOf(this);
+
             if (typeof this.model === "number") {
+                numChildren = this.model;
                 for (var i = 0; i < this.model; ++i) {
                     delegate._instantiateQml(this.parent, { index: i });
                 }
             } else {
                 var children = this.model.priv.children;
-                for (var i = 0, len = children.length; i < len; ++i) {
-                    var item = children[i];
-                    if (!item)
-                        continue; // ????
+                numChildren = children.length;
+                for (var i = 0; i < numChildren; ++i) {
                     var scope = { index: i };
                     var props = Object.getOwnPropertyNames(item);
                     for (var j = 0, len = props.length; j < len; ++j) {
@@ -294,6 +296,24 @@ addElement(basicelements, { parent: element, name: "ListElement" });
         }
         var text = this.priv.textNode = document.createTextNode(v);
         this.priv.element.appendChild(text);
+        textSelectableSetter.call(this, this.selectable);
+    }
+
+    var textSelectableSetter = function(v)
+    {
+        if (this.priv.textNode) {
+            var target = this.priv.element;
+            var value = v ? "text" : "none";
+
+            if (typeof target.style.userSelect != "undefined") //Some day in the future?
+                target.style.userSelect = value;
+            else if (typeof target.style.webkitUserSelect != "undefined")
+                target.style.webkitUserSelect = value;
+            else if (typeof target.style.MozUserSelect != "undefined")
+                target.style.MozUserSelect = value;
+            else if (typeof target.style.MozUserSelect != "undefined")
+                target.style.MozUserSelect = value;
+        }
     }
 
     addElement(basicelements,
@@ -301,7 +321,8 @@ addElement(basicelements, { parent: element, name: "ListElement" });
             parent: item,
             name: "Text",
             properties: {
-                text: { value: "", handler: textSetter }
+                text: { value: "", handler: textSetter },
+                selectable: { value: true, handler: textSelectableSetter }
             },
             constructor: function() {
                 this.priv.textNode = null;

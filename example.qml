@@ -17,25 +17,6 @@ Item {
 
         transition: "all .4s ease-in"
 
-        Component {
-            id: component
-
-            Rectangle {
-                property var unused
-
-                width: 80 / 2
-                height: 24
-                color: buttonColor
-                radius: 8
-
-                Text {
-                    x: 4
-                    y: 4
-                    text: index
-                }
-            }
-        }
-
         /* list model repeater */
 
         SimpleModel { id: listModel }
@@ -50,7 +31,7 @@ Item {
                 y: 28
                 Repeater {
                     model: listModel
-                    Text { width: 80 ; height: 28 ; text: name }
+                    Text { width: 100 ; height: 28 ; text: name }
                 }
             }
         }
@@ -60,25 +41,78 @@ Item {
          */
 
         Item {
-            x: 520
+            x: 540
             y: 20
 
             transition: "all .8s ease-in-out"
             transform: up ? "translate3d(0,0,0)" : "translate3d(0,300px,0)"
 
+            property var number: ""
+
+            Component {
+                id: rowComponent
+
+                Row {
+                    property var columnIndex: index
+                    spacing: 2
+                    Repeater {
+                        model: 3
+
+                        Button {
+                            width: 40
+                            buttonText: 3 * columnIndex + index + 1
+                            onClicked: number += buttonText
+                        }
+                    }
+                }
+            }
+
             Text { width: 200 ; text: "Nested Row / Column with number Repeaters:" }
 
-            Row {
+            Column {
                 id: row
                 spacing: 2
                 y: 48
+
                 Repeater {
-                    model: 4
-                    Column {
+                    model: 3
+                    delegate: rowComponent
+                }
+
+                Repeater {
+                    /* hack for now to get this Row to appear below above Repeater's elements */
+                    model: 1
+                    Row {
                         spacing: 2
-                        Repeater {
-                            model: 8
-                            delegate: component
+                        Button {
+                            buttonText: "DEL"
+                            width: 40
+                            onClicked: number = number.substr(0, number.length - 1)
+                        }
+                        Button {
+                            buttonText: 0
+                            width: 40
+                            onClicked: number += buttonText
+                        }
+                        Button {
+                            buttonText: "CLR"
+                            width: 40
+                            onClicked: number = ""
+                        }
+                    }
+                }
+
+                Repeater {
+                    model: 1
+                    Column {
+                        Item { height: 1 }
+                        Label {
+                            width: 124
+                            borderColor: "black"
+                            borderStyle: "solid"
+                            borderWidth: 1
+                            labelColor: ""
+                            labelText: number
                         }
                     }
                 }

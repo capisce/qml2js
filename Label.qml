@@ -1,6 +1,7 @@
 Rectangle {
     property var labelColor: "#38c"
     property var labelText: ""
+    property var selectable: true
     width: 80
     height: 24
     color: labelColor
@@ -12,5 +13,6 @@ Rectangle {
         x: 4
         y: 4
         text: labelText
+        selectable: parent.selectable
     }
 }

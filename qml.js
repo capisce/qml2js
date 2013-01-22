@@ -203,7 +203,7 @@ function initQml() {
     addPropertyProxy(root_scope, root, "fps");
     with (root_scope) {
         with (root) applyBindings(root, {
-            color: function() { return "#dddedd" },
+            color: function() { return "#eaeeea" },
             width: function() { return parent.width },
             height: function() { return parent.height },
             foo: function() { return 20 },

@@ -5,7 +5,7 @@ Item {
 
     Rectangle {
         id: root
-        color: "#dddedd"
+        color: "#eaeeea"
 
         width: parent.width
         height: parent.height

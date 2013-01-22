@@ -302,7 +302,7 @@ generateElementDefinition file obj =
             i2 ++ "properties: {\n" ++
             ownPropertyList obj ++
             i2 ++ "},\n" ++
-            i2 ++ "constructor: function() {\n" ++
+            i2 ++ "constructor: function(parent) {\n" ++
                 i3 ++ "var " ++ objectId obj ++ " = this;\n" ++
                 childConstructors 3 obj ++
                 generateBindings 3 obj ++

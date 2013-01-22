@@ -119,25 +119,20 @@ Item {
                 height: 24
             }
 
-            Label {
-                width: 140
+            Button {
                 height: 24
-                color: buttonColor
                 radius: 8
 
                 property var enabled: false
-                labelText: hoverArea.hovered ? "QML Rocks!" : "Hover me"
-
-                MouseArea {
-                    id: hoverArea
-                    width: parent.width
-                    height: parent.height
-                    hoverEnabled: true
-                }
+                buttonText: hovered ? "QML Rocks!" : "Hover me"
             }
 
             Label {
                 y: 48
+                borderColor: "black"
+                borderStyle: "solid"
+                borderWidth: "1"
+                labelColor: ""
                 labelText: root.fps + " fps"
             }
 

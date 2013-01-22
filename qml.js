@@ -10,7 +10,7 @@ function initQml() {
         properties: {
 
         },
-        constructor: function() {
+        constructor: function(parent) {
             var _qml_id_ListModel = this;
             var _qml_id_1_ListElement = createInstance(imports, "ListElement", _qml_id_ListModel);
             addProperty(_qml_id_1_ListElement, "name");
@@ -47,22 +47,22 @@ function initQml() {
         parent: lookupElement(imports, "Rectangle"),
         name: "Label",
         properties: {
-            buttonColor: {},
+            labelColor: {},
             labelText: {}
         },
-        constructor: function() {
+        constructor: function(parent) {
             var _qml_id_Rectangle = this;
             var _qml_id_1_Text = createInstance(imports, "Text", _qml_id_Rectangle);
             var _qml_id_Rectangle_scope = {};
-            addPropertyProxy(_qml_id_Rectangle_scope, _qml_id_Rectangle, "buttonColor");
+            addPropertyProxy(_qml_id_Rectangle_scope, _qml_id_Rectangle, "labelColor");
             addPropertyProxy(_qml_id_Rectangle_scope, _qml_id_Rectangle, "labelText");
             with (_qml_id_Rectangle_scope) {
                 with (_qml_id_Rectangle) applyBindings(_qml_id_Rectangle, {
-                    buttonColor: function() { return "#59d" },
+                    labelColor: function() { return "#38c" },
                     labelText: function() { return "" },
                     width: function() { return 80 },
                     height: function() { return 24 },
-                    color: function() { return buttonColor },
+                    color: function() { return labelColor },
                     radius: function() { return 8 }
                 });
                 with (_qml_id_1_Text) applyBindings(_qml_id_1_Text, {
@@ -83,7 +83,7 @@ function initQml() {
         properties: {
             buttonText: {}
         },
-        constructor: function() {
+        constructor: function(parent) {
             var _qml_id_MouseArea = this;
             var label = createInstance(imports, "Label", _qml_id_MouseArea);
             var _qml_id_MouseArea_scope = {};
@@ -91,10 +91,12 @@ function initQml() {
             with (_qml_id_MouseArea_scope) {
                 with (_qml_id_MouseArea) applyBindings(_qml_id_MouseArea, {
                     buttonText: function() { return "" },
-                    width: function() { return 80 },
-                    height: function() { return 24 }
+                    width: function() { return 120 },
+                    height: function() { return 24 },
+                    hoverEnabled: function() { return true }
                 });
                 with (label) applyBindings(label, {
+                    labelColor: function() { return parent.hovered ? "#38c" : "#59d" },
                     width: function() { return parent.width },
                     height: function() { return parent.height },
                     labelText: function() { return buttonText }
@@ -110,7 +112,7 @@ function initQml() {
         properties: {
             value: {}
         },
-        constructor: function() {
+        constructor: function(parent) {
             var _qml_id_Item = this;
             var _qml_id_1_Rectangle = createInstance(imports, "Rectangle", _qml_id_Item);
             var _qml_id_2_Rectangle = createInstance(imports, "Rectangle", _qml_id_Item);
@@ -166,9 +168,8 @@ function initQml() {
     var _qml_id_1_6_Timer = createInstance(imports, "Timer", root);
     var column = createInstance(imports, "Column", root);
     var dummy = createInstance(imports, "Item", column);
-    var _qml_id_1_7_2_Label = createInstance(imports, "Label", column);
-    addProperty(_qml_id_1_7_2_Label, "enabled");
-    var hoverArea = createInstance(imports, "MouseArea", _qml_id_1_7_2_Label);
+    var _qml_id_1_7_2_Button = createInstance(imports, "Button", column);
+    addProperty(_qml_id_1_7_2_Button, "enabled");
     var _qml_id_1_7_3_Label = createInstance(imports, "Label", column);
     var _qml_id_1_7_4_Item = createInstance(imports, "Item", column);
     addProperty(_qml_id_1_7_4_Item, "enabled");
@@ -309,25 +310,23 @@ function initQml() {
             width: function() { return 140 },
             height: function() { return 24 }
         });
-        var _qml_id_1_7_2_Label_scope = {};
-        addPropertyProxy(_qml_id_1_7_2_Label_scope, _qml_id_1_7_2_Label, "enabled");
-        with (_qml_id_1_7_2_Label_scope) {
-            with (_qml_id_1_7_2_Label) applyBindings(_qml_id_1_7_2_Label, {
-                width: function() { return 140 },
+        var _qml_id_1_7_2_Button_scope = {};
+        addPropertyProxy(_qml_id_1_7_2_Button_scope, _qml_id_1_7_2_Button, "enabled");
+        with (_qml_id_1_7_2_Button_scope) {
+            with (_qml_id_1_7_2_Button) applyBindings(_qml_id_1_7_2_Button, {
+                width: function() { return 120 },
                 height: function() { return 24 },
-                color: function() { return buttonColor },
                 radius: function() { return 8 },
                 enabled: function() { return false },
-                labelText: function() { return hoverArea.hovered ? "QML Rocks!" : "Hover me" }
-            });
-            with (hoverArea) applyBindings(hoverArea, {
-                width: function() { return parent.width },
-                height: function() { return parent.height },
-                hoverEnabled: function() { return true }
+                buttonText: function() { return hovered ? "QML Rocks!" : "Hover me" }
             });
         }
         with (_qml_id_1_7_3_Label) applyBindings(_qml_id_1_7_3_Label, {
             y: function() { return 48 },
+            borderColor: function() { return "black" },
+            borderStyle: function() { return "solid" },
+            borderWidth: function() { return "1" },
+            labelColor: function() { return "" },
             labelText: function() { return root.fps + " fps" }
         });
         var _qml_id_1_7_4_Item_scope = {};

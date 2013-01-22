@@ -1,9 +1,9 @@
 Rectangle {
-    property var buttonColor: "#59d"
+    property var labelColor: "#38c"
     property var labelText: ""
     width: 80
     height: 24
-    color: buttonColor
+    color: labelColor
     radius: 8
 
     Text {
